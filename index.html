@@ -146,36 +146,50 @@
   }
   .copy-feedback.show { opacity: 1; }
 
-  /* ===== NOVOS ESTILOS DO GRÁFICO PROFISSIONAL ===== */
-  .chart-pro {
+  /* ===== DONUT CHART ===== */
+  .donut-container {
+    display: flex; flex-direction: column; align-items: center;
     background: linear-gradient(180deg, #0f172a 0%, #121820 100%);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px 16px 14px;
-    margin-bottom: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    border: 1px solid var(--border); border-radius: 18px;
+    padding: 22px 16px 18px; margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
   }
-  .chart-pro-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+  .donut-svg { width: 220px; height: 220px; }
+  .donut-center-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center; pointer-events: none;
   }
-  .chart-pro-title { font-size: 15px; font-weight: 700; color: #e2e8f0; }
-  .chart-pro-badge {
-    font-size: 11px; background: #1e293b; color: #94a3b8;
-    padding: 4px 10px; border-radius: 20px;
+  .donut-center-value { font-size: 28px; font-weight: 800; color: #fff; }
+  .donut-center-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .donut-legend {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px;
+    margin-top: 18px; width: 100%; max-width: 340px;
   }
-  .chart-pro-bars { margin-top: 6px; }
-  .chart-pro .bar-row { grid-template-columns: 100px 1fr 52px; margin-bottom: 12px; }
-  .chart-pro .bar-track { height: 18px; border-radius: 12px; }
-  .chart-pro .bar-fill { border-radius: 12px; }
-  .chart-pro .bar-label { font-size: 13px; color: #cbd5e1; }
-  .chart-pro .bar-pct { font-size: 13px; color: #f1f5f9; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .legend-color {
+    width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+  }
+  .legend-pct { margin-left: auto; font-weight: 700; color: #e2e8f0; }
+
+  /* Cards rápidos home */
+  .home-quick {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .home-quick { grid-template-columns: 1fr; } }
+  .quick-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px;
+  }
+  .quick-card h3 { font-size: 14px; margin-bottom: 10px; color: var(--accent); }
+  .quick-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .quick-chip {
+    background: #1e293b; border: 1px solid #334155;
+    padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  }
+
   .verificador-box {
-    margin-top: 28px;
-    padding-top: 20px;
-    border-top: 1px dashed #1e2a3a;
+    margin-top: 28px; padding-top: 20px; border-top: 1px dashed #1e2a3a;
   }
-  .verificador-box .section-title { color: #94a3b8; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -205,8 +219,9 @@
     <button class="btn btn-secondary" onclick="backtest()">🧪 Backtest</button>
   </div>
 
-  <!-- INÍCIO -->
+  <!-- ==================== INÍCIO ==================== -->
   <div class="panel active" id="painel-inicio">
+    <!-- SUGESTÃO -->
     <div class="section">
       <div class="section-header">
         <div class="section-title">🎯 Sugestão de Jogo</div>
@@ -218,6 +233,46 @@
       <button class="btn-copy" onclick="copiarSugestao()" id="btn-copiar-sugestao" style="display:none;">📋 Copiar Sugestão</button>
       <span class="copy-feedback" id="feedback-sugestao">Copiado!</span>
     </div>
+
+    <!-- GRÁFICO REDONDO -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">📊 Desempenho Geral de Acertos</div>
+        <div class="section-badge" id="badge-donut">—</div>
+      </div>
+      <div class="donut-container">
+        <div style="position:relative; width:220px; height:220px;">
+          <svg class="donut-svg" viewBox="0 0 42 42" id="donut-svg">
+            <!-- fundo -->
+            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#1e293b" stroke-width="5"></circle>
+            <!-- segmentos serão inseridos via JS -->
+          </svg>
+          <div class="donut-center-text">
+            <div class="donut-center-value" id="donut-total">0%</div>
+            <div class="donut-center-label">Média</div>
+          </div>
+        </div>
+        <div class="donut-legend" id="donut-legend"></div>
+      </div>
+    </div>
+
+    <!-- ANÁLISES RÁPIDAS: 1ª POSIÇÃO + PALPITÃO -->
+    <div class="home-quick">
+      <div class="quick-card">
+        <h3>1️⃣ 1ª Posição (Top 5)</h3>
+        <div class="quick-list" id="home-pos1">
+          <div class="empty" style="padding:12px;font-size:13px;">Carregando...</div>
+        </div>
+      </div>
+      <div class="quick-card">
+        <h3>🔥 Palpitão (Top 8 dezenas)</h3>
+        <div class="quick-list" id="home-palpitao">
+          <div class="empty" style="padding:12px;font-size:13px;">Carregando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RANKING GERAL -->
     <div class="section" id="secao-geral-home" style="display:none;">
       <div class="section-header">
         <div class="section-title">📈 Ranking Geral</div>
@@ -226,25 +281,13 @@
       <div class="grid" id="ranking-geral"></div>
     </div>
 
-    <!-- ===== GRÁFICO PROFISSIONAL + HISTÓRICO NA HOME ===== -->
+    <!-- HISTÓRICO COMPLETO -->
     <div class="section">
       <div class="section-header">
-        <div class="section-title">📊 Desempenho Geral de Acertos</div>
-        <div class="section-badge">Todas as previsões + Atrasados</div>
+        <div class="section-title">🕘 Histórico Completo de Previsões</div>
+        <div class="section-badge">Todos os horários</div>
       </div>
-      <div class="chart-pro" id="chart-pro-home">
-        <div class="chart-pro-header">
-          <div class="chart-pro-title">Taxa de Acerto</div>
-          <div class="chart-pro-badge" id="badge-taxas-home">—</div>
-        </div>
-        <div class="chart-pro-bars" id="chart-taxas-home">
-          <div class="empty" style="padding:20px;">Carregando gráfico...</div>
-        </div>
-      </div>
-      <div class="section-header" style="margin-top:8px;">
-        <div class="section-title">🕘 Histórico do Dia / Últimas Previsões</div>
-      </div>
-      <button class="btn btn-secondary" style="width:100%;margin-bottom:12px;" onclick="carregarVerificadorGeral()">🔄 Atualizar gráfico e histórico</button>
+      <button class="btn btn-secondary" style="width:100%;margin-bottom:12px;" onclick="carregarHomeCompleto()">🔄 Atualizar tudo</button>
       <div id="lista-historico-home"><div class="empty">Carregando histórico...</div></div>
     </div>
   </div>
@@ -267,22 +310,6 @@
       <span class="copy-feedback" id="feedback-atrasados">Copiado!</span>
     </div>
     <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="carregarAtrasados(true)">🔄 Atualizar atrasados</button>
-
-    <!-- Verificador no final da aba -->
-    <div class="verificador-box">
-      <div class="section-header">
-        <div class="section-title">✅ Verificador de Acertos</div>
-        <div class="section-badge">Gráfico + Histórico do dia</div>
-      </div>
-      <div class="chart-pro">
-        <div class="chart-pro-header">
-          <div class="chart-pro-title">Taxa de Acerto</div>
-          <div class="chart-pro-badge" id="badge-taxas-atrasados">—</div>
-        </div>
-        <div class="chart-pro-bars" id="chart-taxas-atrasados"><div class="empty" style="padding:16px;">Carregando...</div></div>
-      </div>
-      <div id="lista-historico-atrasados"><div class="empty">Carregando histórico...</div></div>
-    </div>
   </div>
 
   <!-- 1ª POSIÇÃO -->
@@ -311,22 +338,6 @@
       <button class="btn-copy" onclick="copiarPos1()" id="btn-copiar-pos1" style="display:none;margin-top:12px;">📋 Copiar estes da 1ª Posição</button>
       <span class="copy-feedback" id="feedback-pos1">Copiado!</span>
     </div>
-
-    <!-- Verificador no final da aba -->
-    <div class="verificador-box">
-      <div class="section-header">
-        <div class="section-title">✅ Verificador de Acertos</div>
-        <div class="section-badge">Gráfico + Histórico do dia</div>
-      </div>
-      <div class="chart-pro">
-        <div class="chart-pro-header">
-          <div class="chart-pro-title">Taxa de Acerto</div>
-          <div class="chart-pro-badge" id="badge-taxas-pos1">—</div>
-        </div>
-        <div class="chart-pro-bars" id="chart-taxas-pos1"><div class="empty" style="padding:16px;">Carregando...</div></div>
-      </div>
-      <div id="lista-historico-pos1"><div class="empty">Carregando histórico...</div></div>
-    </div>
   </div>
 
   <!-- ANÁLISE -->
@@ -348,22 +359,6 @@
       <div class="section-header"><div class="section-title">🔢 Ranking por Posição</div></div>
       <div id="por-posicao"></div>
     </div>
-
-    <!-- Verificador no final da aba -->
-    <div class="verificador-box">
-      <div class="section-header">
-        <div class="section-title">✅ Verificador de Acertos</div>
-        <div class="section-badge">Gráfico + Histórico do dia</div>
-      </div>
-      <div class="chart-pro">
-        <div class="chart-pro-header">
-          <div class="chart-pro-title">Taxa de Acerto</div>
-          <div class="chart-pro-badge" id="badge-taxas-analise">—</div>
-        </div>
-        <div class="chart-pro-bars" id="chart-taxas-analise"><div class="empty" style="padding:16px;">Carregando...</div></div>
-      </div>
-      <div id="lista-historico-analise"><div class="empty">Carregando histórico...</div></div>
-    </div>
   </div>
 
   <!-- RESULTADOS -->
@@ -371,22 +366,6 @@
     <div class="section">
       <div class="section-header"><div class="section-title">📋 Últimos Resultados</div></div>
       <div class="grid" id="resultados"><div class="empty">Carregando resultados...</div></div>
-    </div>
-
-    <!-- Verificador no final da aba -->
-    <div class="verificador-box">
-      <div class="section-header">
-        <div class="section-title">✅ Verificador de Acertos</div>
-        <div class="section-badge">Gráfico + Histórico do dia</div>
-      </div>
-      <div class="chart-pro">
-        <div class="chart-pro-header">
-          <div class="chart-pro-title">Taxa de Acerto</div>
-          <div class="chart-pro-badge" id="badge-taxas-resultados">—</div>
-        </div>
-        <div class="chart-pro-bars" id="chart-taxas-resultados"><div class="empty" style="padding:16px;">Carregando...</div></div>
-      </div>
-      <div id="lista-historico-resultados"><div class="empty">Carregando histórico...</div></div>
     </div>
   </div>
 
@@ -429,22 +408,6 @@
       <button class="btn-copy" onclick="copiarPalpiteGrupos()" id="btn-copiar-grupos" style="display:none;margin-top:12px;">📋 Copiar todas as milhares</button>
       <span class="copy-feedback" id="feedback-grupos">Copiado!</span>
     </div>
-
-    <!-- Verificador no final da aba -->
-    <div class="verificador-box">
-      <div class="section-header">
-        <div class="section-title">✅ Verificador de Acertos</div>
-        <div class="section-badge">Gráfico + Histórico do dia</div>
-      </div>
-      <div class="chart-pro">
-        <div class="chart-pro-header">
-          <div class="chart-pro-title">Taxa de Acerto</div>
-          <div class="chart-pro-badge" id="badge-taxas-grupos">—</div>
-        </div>
-        <div class="chart-pro-bars" id="chart-taxas-grupos"><div class="empty" style="padding:16px;">Carregando...</div></div>
-      </div>
-      <div id="lista-historico-grupos"><div class="empty">Carregando histórico...</div></div>
-    </div>
   </div>
 
   <!-- PALPITÃO -->
@@ -458,22 +421,6 @@
       <div id="box-palpitao"><div class="empty">Toque em <strong>Gerar / Atualizar Palpitão</strong>.</div></div>
       <button class="btn-copy" onclick="copiarPalpitao()" id="btn-copiar-palpitao" style="display:none;margin-top:12px;">📋 Copiar as 20 dezenas</button>
       <span class="copy-feedback" id="feedback-palpitao">Copiado!</span>
-    </div>
-
-    <!-- Verificador no final da aba -->
-    <div class="verificador-box">
-      <div class="section-header">
-        <div class="section-title">✅ Verificador de Acertos</div>
-        <div class="section-badge">Gráfico + Histórico do dia</div>
-      </div>
-      <div class="chart-pro">
-        <div class="chart-pro-header">
-          <div class="chart-pro-title">Taxa de Acerto</div>
-          <div class="chart-pro-badge" id="badge-taxas-palpitao">—</div>
-        </div>
-        <div class="chart-pro-bars" id="chart-taxas-palpitao"><div class="empty" style="padding:16px;">Carregando...</div></div>
-      </div>
-      <div id="lista-historico-palpitao"><div class="empty">Carregando histórico...</div></div>
     </div>
   </div>
 
@@ -490,22 +437,6 @@
         <p style="margin-bottom:12px;"><strong>Automático:</strong> Salva previsão 10 min antes e 5 min depois de cada resultado. Verifica acertos no horário.</p>
         <p>Use os botões <strong>📋 Copiar</strong> para copiar os números facilmente.</p>
       </div>
-    </div>
-
-    <!-- Verificador no final da aba -->
-    <div class="verificador-box">
-      <div class="section-header">
-        <div class="section-title">✅ Verificador de Acertos</div>
-        <div class="section-badge">Gráfico + Histórico do dia</div>
-      </div>
-      <div class="chart-pro">
-        <div class="chart-pro-header">
-          <div class="chart-pro-title">Taxa de Acerto</div>
-          <div class="chart-pro-badge" id="badge-taxas-explicacao">—</div>
-        </div>
-        <div class="chart-pro-bars" id="chart-taxas-explicacao"><div class="empty" style="padding:16px;">Carregando...</div></div>
-      </div>
-      <div id="lista-historico-explicacao"><div class="empty">Carregando histórico...</div></div>
     </div>
   </div>
 </div>
@@ -559,9 +490,7 @@ function trocarPainel(id, btn) {
   if (id === 'painel-acertos') carregarHistoricoPrevisoes();
   if (id === 'painel-palpite-grupos') carregarPalpiteGrupos();
   if (id === 'painel-palpitao') carregarPalpitao();
-
-  // Carrega o verificador da aba atual
-  carregarVerificadorPorPainel(id);
+  if (id === 'painel-inicio') carregarHomeCompleto();
 }
 
 function formatarData(data) {
@@ -755,6 +684,8 @@ async function carregarAtrasadosPos1() {
     };
     setStatus(`1ª Posição atualizada · ${r.totalSorteios || 0} sorteios`);
     renderPos1(tipoPos1Atual);
+    // Atualiza também a home se estiver visível
+    renderHomePos1();
   } catch (e) {
     div.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
     setStatus('Erro ao carregar 1ª posição', true);
@@ -892,7 +823,6 @@ function renderBarrasTaxas(taxas) {
   }).join('');
 }
 
-/* ===== NOVA FUNÇÃO: RENDERIZA GRÁFICO + HISTÓRICO EM QUALQUER LUGAR ===== */
 function renderHistoricoItens(itens, containerId) {
   const box = document.getElementById(containerId);
   if (!box) return;
@@ -922,41 +852,126 @@ function renderHistoricoItens(itens, containerId) {
   });
 }
 
-async function carregarVerificadorGeral() {
-  // Home
-  await carregarVerificadorEm('chart-taxas-home', 'badge-taxas-home', 'lista-historico-home');
+/* ===== DONUT CHART ===== */
+function renderDonut(taxas) {
+  const colors = {
+    milhar: '#a78bfa',
+    centena: '#67e8f9',
+    dezena: '#fcd34d',
+    grupo: '#6ee7b7',
+    sugestao: '#60a5fa'
+  };
+  const labels = {
+    milhar: 'Milhar',
+    centena: 'Centena',
+    dezena: 'Dezena',
+    grupo: 'Grupo',
+    sugestao: 'Sugestão'
+  };
+  const keys = ['milhar','centena','dezena','grupo','sugestao'];
+  const values = keys.map(k => Math.max(0, Math.min(100, Number(taxas[k]) || 0)));
+  const total = values.reduce((a,b) => a+b, 0);
+  const media = total > 0 ? Math.round(total / values.length) : 0;
+
+  document.getElementById('donut-total').textContent = media + '%';
+  document.getElementById('badge-donut').textContent = media + '% média';
+
+  // Cria os arcos
+  const svg = document.getElementById('donut-svg');
+  // Remove segmentos antigos (mantém o fundo)
+  while (svg.children.length > 1) svg.removeChild(svg.lastChild);
+
+  let offset = 25; // começa do topo
+  values.forEach((val, i) => {
+    if (val <= 0) return;
+    const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circ.setAttribute('cx', '21');
+    circ.setAttribute('cy', '21');
+    circ.setAttribute('r', '15.915');
+    circ.setAttribute('fill', 'transparent');
+    circ.setAttribute('stroke', colors[keys[i]]);
+    circ.setAttribute('stroke-width', '5');
+    circ.setAttribute('stroke-dasharray', `${val} ${100 - val}`);
+    circ.setAttribute('stroke-dashoffset', offset);
+    circ.style.transition = 'stroke-dasharray 0.8s ease';
+    svg.appendChild(circ);
+    offset -= val;
+  });
+
+  // Legenda
+  const legend = document.getElementById('donut-legend');
+  legend.innerHTML = keys.map((k,i) => `
+    <div class="legend-item">
+      <div class="legend-color" style="background:${colors[k]}"></div>
+      <span>${labels[k]}</span>
+      <span class="legend-pct">${values[i]}%</span>
+    </div>
+  `).join('');
 }
 
-async function carregarVerificadorEm(chartId, badgeId, listaId) {
-  const chart = document.getElementById(chartId);
-  const badge = document.getElementById(badgeId);
-  const box = document.getElementById(listaId);
-  if (chart) chart.innerHTML = '<div class="empty" style="padding:16px;">Carregando gráfico...</div>';
-  if (box) box.innerHTML = '<div class="empty">Carregando histórico...</div>';
+/* ===== HOME COMPLETO ===== */
+async function carregarHomeCompleto() {
+  // 1. Histórico + Donut
   try {
     const r = await api('historico_previsoes');
-    if (chart) chart.innerHTML = renderBarrasTaxas(r.taxas || {});
-    if (badge) badge.textContent = (r.fechados || 0) + ' fechadas';
-    renderHistoricoItens(r.itens || [], listaId);
+    renderDonut(r.taxas || {});
+    renderHistoricoItens(r.itens || [], 'lista-historico-home');
   } catch (e) {
-    if (chart) chart.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
-    if (box) box.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
+    document.getElementById('lista-historico-home').innerHTML = `<div class="empty">Erro histórico: ${e.message}</div>`;
+  }
+
+  // 2. 1ª Posição (top 5 milhar)
+  renderHomePos1();
+
+  // 3. Palpitão (top 8)
+  renderHomePalpitao();
+}
+
+async function renderHomePos1() {
+  const box = document.getElementById('home-pos1');
+  if (!box) return;
+  try {
+    if (!cachePos1) {
+      const r = await api('atrasados_pos1');
+      cachePos1 = {
+        milhar: r.milhar || [],
+        centena: r.centena || [],
+        dezena: r.dezena || [],
+        grupo: r.grupo || []
+      };
+    }
+    const lista = (cachePos1.milhar || []).slice(0, 5);
+    if (!lista.length) {
+      box.innerHTML = '<div class="empty" style="padding:10px;font-size:13px;">Sem dados</div>';
+      return;
+    }
+    box.innerHTML = lista.map(i => 
+      `<div class="quick-chip" style="border-color:#5b21b6;color:#c4b5fd;">${i.valor}</div>`
+    ).join('');
+  } catch (e) {
+    box.innerHTML = `<div class="empty" style="padding:10px;font-size:13px;">Erro</div>`;
   }
 }
 
-function carregarVerificadorPorPainel(idPainel) {
-  const mapa = {
-    'painel-inicio':       ['chart-taxas-home', 'badge-taxas-home', 'lista-historico-home'],
-    'painel-atrasados':    ['chart-taxas-atrasados', 'badge-taxas-atrasados', 'lista-historico-atrasados'],
-    'painel-pos1':         ['chart-taxas-pos1', 'badge-taxas-pos1', 'lista-historico-pos1'],
-    'painel-analise':      ['chart-taxas-analise', 'badge-taxas-analise', 'lista-historico-analise'],
-    'painel-resultados':   ['chart-taxas-resultados', 'badge-taxas-resultados', 'lista-historico-resultados'],
-    'painel-palpite-grupos':['chart-taxas-grupos', 'badge-taxas-grupos', 'lista-historico-grupos'],
-    'painel-palpitao':     ['chart-taxas-palpitao', 'badge-taxas-palpitao', 'lista-historico-palpitao'],
-    'painel-explicacao':   ['chart-taxas-explicacao', 'badge-taxas-explicacao', 'lista-historico-explicacao']
-  };
-  const ids = mapa[idPainel];
-  if (ids) carregarVerificadorEm(ids[0], ids[1], ids[2]);
+async function renderHomePalpitao() {
+  const box = document.getElementById('home-palpitao');
+  if (!box) return;
+  try {
+    if (!cachePalpitao.length) {
+      const r = await api('palpitao');
+      cachePalpitao = r.dezenas || [];
+    }
+    const lista = cachePalpitao.slice(0, 8);
+    if (!lista.length) {
+      box.innerHTML = '<div class="empty" style="padding:10px;font-size:13px;">Sem dados</div>';
+      return;
+    }
+    box.innerHTML = lista.map(d => 
+      `<div class="quick-chip" style="border-color:#b45309;color:#fcd34d;">${d.dezena}</div>`
+    ).join('');
+  } catch (e) {
+    box.innerHTML = `<div class="empty" style="padding:10px;font-size:13px;">Erro</div>`;
+  }
 }
 
 async function carregarHistoricoPrevisoes() {
@@ -968,30 +983,7 @@ async function carregarHistoricoPrevisoes() {
     if (chart) chart.innerHTML = renderBarrasTaxas(r.taxas || {});
     const badge = document.getElementById('badge-taxas');
     if (badge) badge.textContent = (r.fechados || 0) + ' fechadas';
-    if (!r.itens || !r.itens.length) {
-      if (box) box.innerHTML = '<div class="empty">Nenhuma previsão salva ainda.</div>';
-      return;
-    }
-    box.innerHTML = '';
-    r.itens.forEach(it => {
-      const ac = it.acertos || {};
-      const st = it.status === 'FECHADO'
-        ? '<span class="badge-ok">FECHADO</span>'
-        : '<span class="badge-pend">' + (it.status || 'PENDENTE') + '</span>';
-      const div = document.createElement('div');
-      div.className = 'hist-card';
-      div.innerHTML = `
-        <div class="title">${st} · ${it.criado || it.id || ''}</div>
-        <div class="meta">
-          ${it.sorteio && it.sorteio.data
-            ? `Sorteio: ${it.sorteio.data} ${it.sorteio.hora || ''}<br>Números: ${(it.sorteio.numeros || []).join(' ')}<br>`
-            : 'Aguardando sorteio<br>'}
-          Acertos → M:${ac.milhar||0} C:${ac.centena||0} D:${ac.dezena||0} G:${ac.grupo||0}
-          · Sug M:${ac.sugestao||0} / C:${ac.sugestao_centena||0}
-          ${it.detalhes ? '<br>' + it.detalhes : ''}
-        </div>`;
-      box.appendChild(div);
-    });
+    renderHistoricoItens(r.itens || [], 'lista-historico-prev');
   } catch (e) {
     if (box) box.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
   }
@@ -1003,7 +995,7 @@ async function salvarPrevisaoAgora() {
     const r = await api('salvar_previsao');
     setStatus(r.sucesso ? ('Previsão salva: ' + (r.idPrev || 'ok')) : 'Falha ao salvar');
     carregarHistoricoPrevisoes();
-    carregarVerificadorGeral();
+    carregarHomeCompleto();
   } catch (e) {
     setStatus('Erro ao salvar: ' + e.message, true);
   }
@@ -1019,7 +1011,6 @@ async function verificarAcertos() {
     await coletaPromise;
     const sorteio = r.sorteio || (r.verificacao && r.verificacao.sorteio) || null;
     const s = r.resumo || (r.verificacao && r.verificacao.resumo) || {};
-    const ac = r.acertos || (r.verificacao && r.verificacao.acertos) || {};
     if (!sorteio) {
       box.innerHTML = '<div class="empty">Nenhum sorteio encontrado. Faça a coleta primeiro.</div>';
       setStatus('Nenhum sorteio encontrado', true);
@@ -1046,7 +1037,7 @@ async function verificarAcertos() {
       ? `Acertos: M${s.milhar||0} C${s.centena||0} D${s.dezena||0} G${s.grupo||0} · Sug ${s.sugestao||0}/${s.sugestao_centena||0}`
       : 'Nenhum acerto neste sorteio');
     carregarHistoricoPrevisoes();
-    carregarVerificadorGeral();
+    carregarHomeCompleto();
   } catch (e) {
     box.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
     setStatus('Erro na verificação: ' + e.message, true);
@@ -1135,6 +1126,7 @@ async function carregarPalpitao() {
     box.innerHTML = html;
     document.getElementById('btn-copiar-palpitao').style.display = 'inline-block';
     setStatus('Palpitão gerado com sucesso');
+    renderHomePalpitao(); // atualiza a home também
   } catch (e) {
     box.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
     setStatus('Erro ao gerar Palpitão', true);
@@ -1203,7 +1195,7 @@ checkSalvar5MinDepois();
 // Inicialização
 status();
 carregar();
-carregarVerificadorGeral(); // carrega o gráfico da home logo no início
+carregarHomeCompleto();
 </script>
 </body>
 </html>
