@@ -146,7 +146,7 @@
   }
   .copy-feedback.show { opacity: 1; }
 
-  /* ===== DONUT CHART ===== */
+  /* DONUT */
   .donut-container {
     display: flex; flex-direction: column; align-items: center;
     background: linear-gradient(180deg, #0f172a 0%, #121820 100%);
@@ -166,9 +166,7 @@
     margin-top: 18px; width: 100%; max-width: 340px;
   }
   .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-  .legend-color {
-    width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
-  }
+  .legend-color { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
   .legend-pct { margin-left: auto; font-weight: 700; color: #e2e8f0; }
 
   /* Cards rápidos home */
@@ -185,10 +183,6 @@
   .quick-chip {
     background: #1e293b; border: 1px solid #334155;
     padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 600;
-  }
-
-  .verificador-box {
-    margin-top: 28px; padding-top: 20px; border-top: 1px dashed #1e2a3a;
   }
 </style>
 </head>
@@ -221,7 +215,6 @@
 
   <!-- ==================== INÍCIO ==================== -->
   <div class="panel active" id="painel-inicio">
-    <!-- SUGESTÃO -->
     <div class="section">
       <div class="section-header">
         <div class="section-title">🎯 Sugestão de Jogo</div>
@@ -243,9 +236,7 @@
       <div class="donut-container">
         <div style="position:relative; width:220px; height:220px;">
           <svg class="donut-svg" viewBox="0 0 42 42" id="donut-svg">
-            <!-- fundo -->
             <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#1e293b" stroke-width="5"></circle>
-            <!-- segmentos serão inseridos via JS -->
           </svg>
           <div class="donut-center-text">
             <div class="donut-center-value" id="donut-total">0%</div>
@@ -256,7 +247,7 @@
       </div>
     </div>
 
-    <!-- ANÁLISES RÁPIDAS: 1ª POSIÇÃO + PALPITÃO -->
+    <!-- ANÁLISES RÁPIDAS -->
     <div class="home-quick">
       <div class="quick-card">
         <h3>1️⃣ 1ª Posição (Top 5)</h3>
@@ -281,7 +272,7 @@
       <div class="grid" id="ranking-geral"></div>
     </div>
 
-    <!-- HISTÓRICO COMPLETO -->
+    <!-- HISTÓRICO -->
     <div class="section">
       <div class="section-header">
         <div class="section-title">🕘 Histórico Completo de Previsões</div>
@@ -474,23 +465,6 @@ async function api(action, timeoutMs = 45000) {
   }
 }
 
-/* ===== COLETAR (com timeout de 90 segundos) ===== */
-async function coletar() {
-  setStatus('Coletando dados... (pode demorar até 90s)');
-  try {
-    // Timeout de 90 segundos só para a coleta
-    const r = await api('coletar', 90000);
-    setStatus(`Coleta concluída · ${r.gravados || r.importados || 0} registros`);
-    carregar();
-    // Atualiza também a home
-    if (typeof carregarHomeCompleto === 'function') {
-      carregarHomeCompleto();
-    }
-  } catch (e) {
-    setStatus('Erro na coleta: ' + e.message, true);
-  }
-}
-
 function setStatus(html, isError = false) {
   const el = document.getElementById('status');
   el.className = 'status' + (isError ? ' error' : '');
@@ -578,16 +552,19 @@ async function status() {
     setStatus('API indisponível · ' + e.message, true);
   }
 }
+
 async function coletar() {
-  setStatus('Coletando hoje + ontem...');
+  setStatus('Coletando dados... (pode demorar até 90s)');
   try {
-    const r = await api('coletar');
+    const r = await api('coletar', 90000); // 90 segundos
     setStatus(`Coleta concluída · ${r.gravados || r.importados || 0} registros`);
     carregar();
+    carregarHomeCompleto();
   } catch (e) {
     setStatus('Erro na coleta: ' + e.message, true);
   }
 }
+
 async function carregar() {
   try {
     const r = await api('resultados');
@@ -702,7 +679,6 @@ async function carregarAtrasadosPos1() {
     };
     setStatus(`1ª Posição atualizada · ${r.totalSorteios || 0} sorteios`);
     renderPos1(tipoPos1Atual);
-    // Atualiza também a home se estiver visível
     renderHomePos1();
   } catch (e) {
     div.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
@@ -870,7 +846,6 @@ function renderHistoricoItens(itens, containerId) {
   });
 }
 
-/* ===== DONUT CHART ===== */
 /* ===== DONUT CHART (CORRIGIDO) ===== */
 function renderDonut(taxas) {
   const colors = {
@@ -889,7 +864,6 @@ function renderDonut(taxas) {
   };
   const keys = ['milhar', 'centena', 'dezena', 'grupo', 'sugestao'];
 
-  // Valores reais (para legenda e média)
   const realValues = keys.map(k => Math.max(0, Math.min(100, Number(taxas[k]) || 0)));
   const media = realValues.length
     ? Math.round(realValues.reduce((a, b) => a + b, 0) / realValues.length)
@@ -898,22 +872,16 @@ function renderDonut(taxas) {
   document.getElementById('donut-total').textContent = media + '%';
   document.getElementById('badge-donut').textContent = media + '% média';
 
-  // Normaliza apenas os valores > 0 para o desenho do gráfico (soma = 100)
-  const positive = realValues.map((v, i) => ({ v, i })).filter(o => o.v > 0);
-  const sumPositive = positive.reduce((a, b) => a + b.v, 0) || 1;
+  // Normaliza para o desenho (soma = 100)
+  const sumPositive = realValues.reduce((a, b) => a + (b > 0 ? b : 0), 0) || 1;
   const normalized = realValues.map(v => v > 0 ? (v / sumPositive) * 100 : 0);
 
-  // Limpa arcos antigos
   const svg = document.getElementById('donut-svg');
-  while (svg.children.length > 1) {
-    svg.removeChild(svg.lastChild);
-  }
+  while (svg.children.length > 1) svg.removeChild(svg.lastChild);
 
-  // Desenha os arcos normalizados (todas as cores aparecem)
-  let offset = 25; // começa no topo
+  let offset = 25;
   normalized.forEach((val, i) => {
     if (val <= 0) return;
-
     const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     circ.setAttribute('cx', '21');
     circ.setAttribute('cy', '21');
@@ -925,11 +893,9 @@ function renderDonut(taxas) {
     circ.setAttribute('stroke-dashoffset', offset);
     circ.style.transition = 'stroke-dasharray 0.8s ease';
     svg.appendChild(circ);
-
     offset -= val;
   });
 
-  // Legenda com os valores REAIS
   const legend = document.getElementById('donut-legend');
   legend.innerHTML = keys.map((k, i) => `
     <div class="legend-item">
@@ -942,7 +908,6 @@ function renderDonut(taxas) {
 
 /* ===== HOME COMPLETO ===== */
 async function carregarHomeCompleto() {
-  // 1. Histórico + Donut
   try {
     const r = await api('historico_previsoes');
     renderDonut(r.taxas || {});
@@ -950,11 +915,7 @@ async function carregarHomeCompleto() {
   } catch (e) {
     document.getElementById('lista-historico-home').innerHTML = `<div class="empty">Erro histórico: ${e.message}</div>`;
   }
-
-  // 2. 1ª Posição (top 5 milhar)
   renderHomePos1();
-
-  // 3. Palpitão (top 8)
   renderHomePalpitao();
 }
 
@@ -1037,7 +998,7 @@ async function verificarAcertos() {
   box.innerHTML = '<div class="empty">Verificando...</div>';
   setStatus('Comparando atrasados com o último sorteio...');
   try {
-    const coletaPromise = api('coletar').catch(() => null);
+    const coletaPromise = api('coletar', 90000).catch(() => null);
     const r = await api('verificar');
     await coletaPromise;
     const sorteio = r.sorteio || (r.verificacao && r.verificacao.sorteio) || null;
@@ -1157,7 +1118,7 @@ async function carregarPalpitao() {
     box.innerHTML = html;
     document.getElementById('btn-copiar-palpitao').style.display = 'inline-block';
     setStatus('Palpitão gerado com sucesso');
-    renderHomePalpitao(); // atualiza a home também
+    renderHomePalpitao();
   } catch (e) {
     box.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
     setStatus('Erro ao gerar Palpitão', true);
