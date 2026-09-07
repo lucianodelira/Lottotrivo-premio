@@ -853,6 +853,7 @@ function renderHistoricoItens(itens, containerId) {
 }
 
 /* ===== DONUT CHART ===== */
+/* ===== DONUT CHART (CORRIGIDO) ===== */
 function renderDonut(taxas) {
   const colors = {
     milhar: '#a78bfa',
@@ -868,22 +869,33 @@ function renderDonut(taxas) {
     grupo: 'Grupo',
     sugestao: 'Sugestão'
   };
-  const keys = ['milhar','centena','dezena','grupo','sugestao'];
-  const values = keys.map(k => Math.max(0, Math.min(100, Number(taxas[k]) || 0)));
-  const total = values.reduce((a,b) => a+b, 0);
-  const media = total > 0 ? Math.round(total / values.length) : 0;
+  const keys = ['milhar', 'centena', 'dezena', 'grupo', 'sugestao'];
+
+  // Valores reais (para legenda e média)
+  const realValues = keys.map(k => Math.max(0, Math.min(100, Number(taxas[k]) || 0)));
+  const media = realValues.length
+    ? Math.round(realValues.reduce((a, b) => a + b, 0) / realValues.length)
+    : 0;
 
   document.getElementById('donut-total').textContent = media + '%';
   document.getElementById('badge-donut').textContent = media + '% média';
 
-  // Cria os arcos
-  const svg = document.getElementById('donut-svg');
-  // Remove segmentos antigos (mantém o fundo)
-  while (svg.children.length > 1) svg.removeChild(svg.lastChild);
+  // Normaliza apenas os valores > 0 para o desenho do gráfico (soma = 100)
+  const positive = realValues.map((v, i) => ({ v, i })).filter(o => o.v > 0);
+  const sumPositive = positive.reduce((a, b) => a + b.v, 0) || 1;
+  const normalized = realValues.map(v => v > 0 ? (v / sumPositive) * 100 : 0);
 
-  let offset = 25; // começa do topo
-  values.forEach((val, i) => {
+  // Limpa arcos antigos
+  const svg = document.getElementById('donut-svg');
+  while (svg.children.length > 1) {
+    svg.removeChild(svg.lastChild);
+  }
+
+  // Desenha os arcos normalizados (todas as cores aparecem)
+  let offset = 25; // começa no topo
+  normalized.forEach((val, i) => {
     if (val <= 0) return;
+
     const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     circ.setAttribute('cx', '21');
     circ.setAttribute('cy', '21');
@@ -895,16 +907,17 @@ function renderDonut(taxas) {
     circ.setAttribute('stroke-dashoffset', offset);
     circ.style.transition = 'stroke-dasharray 0.8s ease';
     svg.appendChild(circ);
+
     offset -= val;
   });
 
-  // Legenda
+  // Legenda com os valores REAIS
   const legend = document.getElementById('donut-legend');
-  legend.innerHTML = keys.map((k,i) => `
+  legend.innerHTML = keys.map((k, i) => `
     <div class="legend-item">
       <div class="legend-color" style="background:${colors[k]}"></div>
       <span>${labels[k]}</span>
-      <span class="legend-pct">${values[i]}%</span>
+      <span class="legend-pct">${realValues[i]}%</span>
     </div>
   `).join('');
 }
