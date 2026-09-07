@@ -119,7 +119,7 @@
   .bar-row { display: grid; grid-template-columns: 90px 1fr 48px; align-items: center; gap: 10px; margin-bottom: 10px; }
   .bar-label { font-size: 12px; font-weight: 600; color: var(--muted); }
   .bar-track { height: 16px; background: #1a2332; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-  .bar-fill { height: 100%; border-radius: 10px; }
+  .bar-fill { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
   .bar-fill.milhar   { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
   .bar-fill.centena  { background: linear-gradient(90deg, #0891b2, #67e8f9); }
   .bar-fill.dezena   { background: linear-gradient(90deg, #d97706, #fcd34d); }
@@ -145,6 +145,37 @@
     font-size: 12px; color: #6ee7b7; margin-left: 8px; opacity: 0; transition: opacity 0.3s;
   }
   .copy-feedback.show { opacity: 1; }
+
+  /* ===== NOVOS ESTILOS DO GRÁFICO PROFISSIONAL ===== */
+  .chart-pro {
+    background: linear-gradient(180deg, #0f172a 0%, #121820 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 16px 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .chart-pro-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+  }
+  .chart-pro-title { font-size: 15px; font-weight: 700; color: #e2e8f0; }
+  .chart-pro-badge {
+    font-size: 11px; background: #1e293b; color: #94a3b8;
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .chart-pro-bars { margin-top: 6px; }
+  .chart-pro .bar-row { grid-template-columns: 100px 1fr 52px; margin-bottom: 12px; }
+  .chart-pro .bar-track { height: 18px; border-radius: 12px; }
+  .chart-pro .bar-fill { border-radius: 12px; }
+  .chart-pro .bar-label { font-size: 13px; color: #cbd5e1; }
+  .chart-pro .bar-pct { font-size: 13px; color: #f1f5f9; }
+  .verificador-box {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px dashed #1e2a3a;
+  }
+  .verificador-box .section-title { color: #94a3b8; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -194,6 +225,28 @@
       </div>
       <div class="grid" id="ranking-geral"></div>
     </div>
+
+    <!-- ===== GRÁFICO PROFISSIONAL + HISTÓRICO NA HOME ===== -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">📊 Desempenho Geral de Acertos</div>
+        <div class="section-badge">Todas as previsões + Atrasados</div>
+      </div>
+      <div class="chart-pro" id="chart-pro-home">
+        <div class="chart-pro-header">
+          <div class="chart-pro-title">Taxa de Acerto</div>
+          <div class="chart-pro-badge" id="badge-taxas-home">—</div>
+        </div>
+        <div class="chart-pro-bars" id="chart-taxas-home">
+          <div class="empty" style="padding:20px;">Carregando gráfico...</div>
+        </div>
+      </div>
+      <div class="section-header" style="margin-top:8px;">
+        <div class="section-title">🕘 Histórico do Dia / Últimas Previsões</div>
+      </div>
+      <button class="btn btn-secondary" style="width:100%;margin-bottom:12px;" onclick="carregarVerificadorGeral()">🔄 Atualizar gráfico e histórico</button>
+      <div id="lista-historico-home"><div class="empty">Carregando histórico...</div></div>
+    </div>
   </div>
 
   <!-- ATRASADOS -->
@@ -214,6 +267,22 @@
       <span class="copy-feedback" id="feedback-atrasados">Copiado!</span>
     </div>
     <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="carregarAtrasados(true)">🔄 Atualizar atrasados</button>
+
+    <!-- Verificador no final da aba -->
+    <div class="verificador-box">
+      <div class="section-header">
+        <div class="section-title">✅ Verificador de Acertos</div>
+        <div class="section-badge">Gráfico + Histórico do dia</div>
+      </div>
+      <div class="chart-pro">
+        <div class="chart-pro-header">
+          <div class="chart-pro-title">Taxa de Acerto</div>
+          <div class="chart-pro-badge" id="badge-taxas-atrasados">—</div>
+        </div>
+        <div class="chart-pro-bars" id="chart-taxas-atrasados"><div class="empty" style="padding:16px;">Carregando...</div></div>
+      </div>
+      <div id="lista-historico-atrasados"><div class="empty">Carregando histórico...</div></div>
+    </div>
   </div>
 
   <!-- 1ª POSIÇÃO -->
@@ -242,6 +311,22 @@
       <button class="btn-copy" onclick="copiarPos1()" id="btn-copiar-pos1" style="display:none;margin-top:12px;">📋 Copiar estes da 1ª Posição</button>
       <span class="copy-feedback" id="feedback-pos1">Copiado!</span>
     </div>
+
+    <!-- Verificador no final da aba -->
+    <div class="verificador-box">
+      <div class="section-header">
+        <div class="section-title">✅ Verificador de Acertos</div>
+        <div class="section-badge">Gráfico + Histórico do dia</div>
+      </div>
+      <div class="chart-pro">
+        <div class="chart-pro-header">
+          <div class="chart-pro-title">Taxa de Acerto</div>
+          <div class="chart-pro-badge" id="badge-taxas-pos1">—</div>
+        </div>
+        <div class="chart-pro-bars" id="chart-taxas-pos1"><div class="empty" style="padding:16px;">Carregando...</div></div>
+      </div>
+      <div id="lista-historico-pos1"><div class="empty">Carregando histórico...</div></div>
+    </div>
   </div>
 
   <!-- ANÁLISE -->
@@ -263,6 +348,22 @@
       <div class="section-header"><div class="section-title">🔢 Ranking por Posição</div></div>
       <div id="por-posicao"></div>
     </div>
+
+    <!-- Verificador no final da aba -->
+    <div class="verificador-box">
+      <div class="section-header">
+        <div class="section-title">✅ Verificador de Acertos</div>
+        <div class="section-badge">Gráfico + Histórico do dia</div>
+      </div>
+      <div class="chart-pro">
+        <div class="chart-pro-header">
+          <div class="chart-pro-title">Taxa de Acerto</div>
+          <div class="chart-pro-badge" id="badge-taxas-analise">—</div>
+        </div>
+        <div class="chart-pro-bars" id="chart-taxas-analise"><div class="empty" style="padding:16px;">Carregando...</div></div>
+      </div>
+      <div id="lista-historico-analise"><div class="empty">Carregando histórico...</div></div>
+    </div>
   </div>
 
   <!-- RESULTADOS -->
@@ -270,6 +371,22 @@
     <div class="section">
       <div class="section-header"><div class="section-title">📋 Últimos Resultados</div></div>
       <div class="grid" id="resultados"><div class="empty">Carregando resultados...</div></div>
+    </div>
+
+    <!-- Verificador no final da aba -->
+    <div class="verificador-box">
+      <div class="section-header">
+        <div class="section-title">✅ Verificador de Acertos</div>
+        <div class="section-badge">Gráfico + Histórico do dia</div>
+      </div>
+      <div class="chart-pro">
+        <div class="chart-pro-header">
+          <div class="chart-pro-title">Taxa de Acerto</div>
+          <div class="chart-pro-badge" id="badge-taxas-resultados">—</div>
+        </div>
+        <div class="chart-pro-bars" id="chart-taxas-resultados"><div class="empty" style="padding:16px;">Carregando...</div></div>
+      </div>
+      <div id="lista-historico-resultados"><div class="empty">Carregando histórico...</div></div>
     </div>
   </div>
 
@@ -312,6 +429,22 @@
       <button class="btn-copy" onclick="copiarPalpiteGrupos()" id="btn-copiar-grupos" style="display:none;margin-top:12px;">📋 Copiar todas as milhares</button>
       <span class="copy-feedback" id="feedback-grupos">Copiado!</span>
     </div>
+
+    <!-- Verificador no final da aba -->
+    <div class="verificador-box">
+      <div class="section-header">
+        <div class="section-title">✅ Verificador de Acertos</div>
+        <div class="section-badge">Gráfico + Histórico do dia</div>
+      </div>
+      <div class="chart-pro">
+        <div class="chart-pro-header">
+          <div class="chart-pro-title">Taxa de Acerto</div>
+          <div class="chart-pro-badge" id="badge-taxas-grupos">—</div>
+        </div>
+        <div class="chart-pro-bars" id="chart-taxas-grupos"><div class="empty" style="padding:16px;">Carregando...</div></div>
+      </div>
+      <div id="lista-historico-grupos"><div class="empty">Carregando histórico...</div></div>
+    </div>
   </div>
 
   <!-- PALPITÃO -->
@@ -325,6 +458,22 @@
       <div id="box-palpitao"><div class="empty">Toque em <strong>Gerar / Atualizar Palpitão</strong>.</div></div>
       <button class="btn-copy" onclick="copiarPalpitao()" id="btn-copiar-palpitao" style="display:none;margin-top:12px;">📋 Copiar as 20 dezenas</button>
       <span class="copy-feedback" id="feedback-palpitao">Copiado!</span>
+    </div>
+
+    <!-- Verificador no final da aba -->
+    <div class="verificador-box">
+      <div class="section-header">
+        <div class="section-title">✅ Verificador de Acertos</div>
+        <div class="section-badge">Gráfico + Histórico do dia</div>
+      </div>
+      <div class="chart-pro">
+        <div class="chart-pro-header">
+          <div class="chart-pro-title">Taxa de Acerto</div>
+          <div class="chart-pro-badge" id="badge-taxas-palpitao">—</div>
+        </div>
+        <div class="chart-pro-bars" id="chart-taxas-palpitao"><div class="empty" style="padding:16px;">Carregando...</div></div>
+      </div>
+      <div id="lista-historico-palpitao"><div class="empty">Carregando histórico...</div></div>
     </div>
   </div>
 
@@ -342,6 +491,22 @@
         <p>Use os botões <strong>📋 Copiar</strong> para copiar os números facilmente.</p>
       </div>
     </div>
+
+    <!-- Verificador no final da aba -->
+    <div class="verificador-box">
+      <div class="section-header">
+        <div class="section-title">✅ Verificador de Acertos</div>
+        <div class="section-badge">Gráfico + Histórico do dia</div>
+      </div>
+      <div class="chart-pro">
+        <div class="chart-pro-header">
+          <div class="chart-pro-title">Taxa de Acerto</div>
+          <div class="chart-pro-badge" id="badge-taxas-explicacao">—</div>
+        </div>
+        <div class="chart-pro-bars" id="chart-taxas-explicacao"><div class="empty" style="padding:16px;">Carregando...</div></div>
+      </div>
+      <div id="lista-historico-explicacao"><div class="empty">Carregando histórico...</div></div>
+    </div>
   </div>
 </div>
 
@@ -354,7 +519,6 @@ let tipoPos1Atual = 'milhar';
 let cacheSugestao = [];
 let cachePalpiteGrupos = [];
 let cachePalpitao = [];
-
 const HORARIOS_VERIFICAR = [
   '01:32','05:32','07:32','09:32','11:32','13:32','15:32','18:32','20:32','22:32'
 ];
@@ -395,6 +559,9 @@ function trocarPainel(id, btn) {
   if (id === 'painel-acertos') carregarHistoricoPrevisoes();
   if (id === 'painel-palpite-grupos') carregarPalpiteGrupos();
   if (id === 'painel-palpitao') carregarPalpitao();
+
+  // Carrega o verificador da aba atual
+  carregarVerificadorPorPainel(id);
 }
 
 function formatarData(data) {
@@ -432,7 +599,6 @@ function copiarTexto(texto, feedbackId) {
     setStatus('Números copiados!');
   });
 }
-
 function copiarSugestao() {
   if (!cacheSugestao.length) return;
   copiarTexto(cacheSugestao.join(' '), 'feedback-sugestao');
@@ -465,7 +631,6 @@ async function status() {
     setStatus('API indisponível · ' + e.message, true);
   }
 }
-
 async function coletar() {
   setStatus('Coletando hoje + ontem...');
   try {
@@ -476,7 +641,6 @@ async function coletar() {
     setStatus('Erro na coleta: ' + e.message, true);
   }
 }
-
 async function carregar() {
   try {
     const r = await api('resultados');
@@ -530,7 +694,6 @@ async function carregarAtrasados(forcar) {
     setStatus('Erro ao carregar atrasados', true);
   }
 }
-
 function mostrarAtrasado(tipo, btn) {
   tipoAtrasadoAtual = tipo;
   document.querySelectorAll('#painel-atrasados .sub-btn').forEach(b => b.classList.remove('active'));
@@ -541,7 +704,6 @@ function mostrarAtrasado(tipo, btn) {
   }
   renderAtrasados(tipo);
 }
-
 function renderAtrasados(tipo) {
   const div = document.getElementById('lista-atrasados');
   const titulo = document.getElementById('titulo-atrasado');
@@ -598,7 +760,6 @@ async function carregarAtrasadosPos1() {
     setStatus('Erro ao carregar 1ª posição', true);
   }
 }
-
 function mostrarPos1(tipo, btn) {
   tipoPos1Atual = tipo;
   document.querySelectorAll('#painel-pos1 .sub-btn').forEach(b => b.classList.remove('active'));
@@ -609,7 +770,6 @@ function mostrarPos1(tipo, btn) {
   }
   renderPos1(tipo);
 }
-
 function renderPos1(tipo) {
   const div = document.getElementById('lista-pos1');
   const titulo = document.getElementById('titulo-pos1');
@@ -657,7 +817,6 @@ async function previsao() {
     setStatus('Erro na análise: ' + e.message, true);
   }
 }
-
 function mostrarPrevisao(r) {
   cacheSugestao = r.sugestao || [];
   ['sugestao', 'sugestao-analise'].forEach(id => {
@@ -673,7 +832,6 @@ function mostrarPrevisao(r) {
   });
   document.getElementById('btn-copiar-sugestao').style.display = cacheSugestao.length ? 'inline-block' : 'none';
   document.getElementById('btn-copiar-sugestao-analise').style.display = cacheSugestao.length ? 'inline-block' : 'none';
-
   [document.getElementById('ranking-geral'), document.getElementById('ranking-geral-analise')].forEach(el => {
     if (!el) return;
     el.innerHTML = '';
@@ -687,7 +845,6 @@ function mostrarPrevisao(r) {
   });
   document.getElementById('secao-geral-home').style.display = 'block';
   document.getElementById('secao-geral').style.display = 'block';
-
   const posDiv = document.getElementById('por-posicao');
   if (posDiv) {
     posDiv.innerHTML = '';
@@ -706,7 +863,6 @@ function mostrarPrevisao(r) {
     document.getElementById('secao-posicao').style.display = 'block';
   }
 }
-
 async function backtest() {
   setStatus('Executando backtest...');
   try {
@@ -734,6 +890,73 @@ function renderBarrasTaxas(taxas) {
       <div class="bar-pct">${w}%</div>
     </div>`;
   }).join('');
+}
+
+/* ===== NOVA FUNÇÃO: RENDERIZA GRÁFICO + HISTÓRICO EM QUALQUER LUGAR ===== */
+function renderHistoricoItens(itens, containerId) {
+  const box = document.getElementById(containerId);
+  if (!box) return;
+  if (!itens || !itens.length) {
+    box.innerHTML = '<div class="empty">Nenhuma previsão salva ainda.</div>';
+    return;
+  }
+  box.innerHTML = '';
+  itens.forEach(it => {
+    const ac = it.acertos || {};
+    const st = it.status === 'FECHADO'
+      ? '<span class="badge-ok">FECHADO</span>'
+      : '<span class="badge-pend">' + (it.status || 'PENDENTE') + '</span>';
+    const div = document.createElement('div');
+    div.className = 'hist-card';
+    div.innerHTML = `
+      <div class="title">${st} · ${it.criado || it.id || ''}</div>
+      <div class="meta">
+        ${it.sorteio && it.sorteio.data
+          ? `Sorteio: ${it.sorteio.data} ${it.sorteio.hora || ''}<br>Números: ${(it.sorteio.numeros || []).join(' ')}<br>`
+          : 'Aguardando sorteio<br>'}
+        Acertos → M:${ac.milhar||0} C:${ac.centena||0} D:${ac.dezena||0} G:${ac.grupo||0}
+        · Sug M:${ac.sugestao||0} / C:${ac.sugestao_centena||0}
+        ${it.detalhes ? '<br>' + it.detalhes : ''}
+      </div>`;
+    box.appendChild(div);
+  });
+}
+
+async function carregarVerificadorGeral() {
+  // Home
+  await carregarVerificadorEm('chart-taxas-home', 'badge-taxas-home', 'lista-historico-home');
+}
+
+async function carregarVerificadorEm(chartId, badgeId, listaId) {
+  const chart = document.getElementById(chartId);
+  const badge = document.getElementById(badgeId);
+  const box = document.getElementById(listaId);
+  if (chart) chart.innerHTML = '<div class="empty" style="padding:16px;">Carregando gráfico...</div>';
+  if (box) box.innerHTML = '<div class="empty">Carregando histórico...</div>';
+  try {
+    const r = await api('historico_previsoes');
+    if (chart) chart.innerHTML = renderBarrasTaxas(r.taxas || {});
+    if (badge) badge.textContent = (r.fechados || 0) + ' fechadas';
+    renderHistoricoItens(r.itens || [], listaId);
+  } catch (e) {
+    if (chart) chart.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
+    if (box) box.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
+  }
+}
+
+function carregarVerificadorPorPainel(idPainel) {
+  const mapa = {
+    'painel-inicio':       ['chart-taxas-home', 'badge-taxas-home', 'lista-historico-home'],
+    'painel-atrasados':    ['chart-taxas-atrasados', 'badge-taxas-atrasados', 'lista-historico-atrasados'],
+    'painel-pos1':         ['chart-taxas-pos1', 'badge-taxas-pos1', 'lista-historico-pos1'],
+    'painel-analise':      ['chart-taxas-analise', 'badge-taxas-analise', 'lista-historico-analise'],
+    'painel-resultados':   ['chart-taxas-resultados', 'badge-taxas-resultados', 'lista-historico-resultados'],
+    'painel-palpite-grupos':['chart-taxas-grupos', 'badge-taxas-grupos', 'lista-historico-grupos'],
+    'painel-palpitao':     ['chart-taxas-palpitao', 'badge-taxas-palpitao', 'lista-historico-palpitao'],
+    'painel-explicacao':   ['chart-taxas-explicacao', 'badge-taxas-explicacao', 'lista-historico-explicacao']
+  };
+  const ids = mapa[idPainel];
+  if (ids) carregarVerificadorEm(ids[0], ids[1], ids[2]);
 }
 
 async function carregarHistoricoPrevisoes() {
@@ -780,6 +1003,7 @@ async function salvarPrevisaoAgora() {
     const r = await api('salvar_previsao');
     setStatus(r.sucesso ? ('Previsão salva: ' + (r.idPrev || 'ok')) : 'Falha ao salvar');
     carregarHistoricoPrevisoes();
+    carregarVerificadorGeral();
   } catch (e) {
     setStatus('Erro ao salvar: ' + e.message, true);
   }
@@ -793,17 +1017,14 @@ async function verificarAcertos() {
     const coletaPromise = api('coletar').catch(() => null);
     const r = await api('verificar');
     await coletaPromise;
-
     const sorteio = r.sorteio || (r.verificacao && r.verificacao.sorteio) || null;
     const s = r.resumo || (r.verificacao && r.verificacao.resumo) || {};
     const ac = r.acertos || (r.verificacao && r.verificacao.acertos) || {};
-
     if (!sorteio) {
       box.innerHTML = '<div class="empty">Nenhum sorteio encontrado. Faça a coleta primeiro.</div>';
       setStatus('Nenhum sorteio encontrado', true);
       return;
     }
-
     let html = `<div class="draw-header">🕐 ${sorteio.data || formatarData(sorteio.data)} · ${sorteio.hora || ''} · ID ${sorteio.id || ''}</div>`;
     html += `<div class="grid" style="margin:12px 0;">`;
     (sorteio.numeros || []).forEach((n, i) => {
@@ -820,12 +1041,12 @@ async function verificarAcertos() {
         <div class="card" style="border-color:#0891b2;"><div class="rank">Sugestão centena</div><div class="num">${s.sugestao_centena||0}</div></div>
       </div>`;
     box.innerHTML = html;
-
     const total = (s.milhar||0) + (s.centena||0) + (s.dezena||0) + (s.grupo||0) + (s.sugestao||0) + (s.sugestao_centena||0);
     setStatus(total > 0
       ? `Acertos: M${s.milhar||0} C${s.centena||0} D${s.dezena||0} G${s.grupo||0} · Sug ${s.sugestao||0}/${s.sugestao_centena||0}`
       : 'Nenhum acerto neste sorteio');
     carregarHistoricoPrevisoes();
+    carregarVerificadorGeral();
   } catch (e) {
     box.innerHTML = `<div class="empty">Erro: ${e.message}</div>`;
     setStatus('Erro na verificação: ' + e.message, true);
@@ -934,7 +1155,6 @@ function jaExecutou(tipo, horario) {
 function marcarExecutado(tipo, horario) {
   localStorage.setItem(`auto_${tipo}_${getHoje()}_${horario}`, '1');
 }
-
 function checkSchedule() {
   const hm = getHoraMinuto();
   HORARIOS_VERIFICAR.forEach(horaVerificar => {
@@ -945,14 +1165,11 @@ function checkSchedule() {
       salvarH = (salvarH - 1 + 24) % 24;
     }
     const horaSalvar = String(salvarH).padStart(2,'0') + ':' + String(salvarM).padStart(2,'0');
-
-    // Salvar previsão 10 min antes
     if (hm === horaSalvar && !jaExecutou('salvar', horaSalvar)) {
       marcarExecutado('salvar', horaSalvar);
       setStatus(`⏰ Automático: salvando previsão (${horaSalvar})...`);
       salvarPrevisaoAgora();
     }
-    // Verificar no horário
     if (hm === horaVerificar && !jaExecutou('verificar', horaVerificar)) {
       marcarExecutado('verificar', horaVerificar);
       setStatus(`⏰ Automático: verificando acertos (${horaVerificar})...`);
@@ -960,8 +1177,6 @@ function checkSchedule() {
     }
   });
 }
-
-/* ===== NOVA FUNÇÃO: SALVAR 5 MIN DEPOIS DO RESULTADO ===== */
 function checkSalvar5MinDepois() {
   const hm = getHoraMinuto();
   HORARIOS_VERIFICAR.forEach(horaResultado => {
@@ -973,7 +1188,6 @@ function checkSalvar5MinDepois() {
       salvarH = (salvarH + 1) % 24;
     }
     const horaSalvar = String(salvarH).padStart(2,'0') + ':' + String(salvarM).padStart(2,'0');
-
     if (hm === horaSalvar && !jaExecutou('salvar_5min', horaSalvar)) {
       marcarExecutado('salvar_5min', horaSalvar);
       setStatus(`⏰ Automático: salvando previsão 5 min após resultado (${horaSalvar})...`);
@@ -981,7 +1195,6 @@ function checkSalvar5MinDepois() {
     }
   });
 }
-
 setInterval(checkSchedule, 20000);
 setInterval(checkSalvar5MinDepois, 20000);
 checkSchedule();
@@ -990,6 +1203,7 @@ checkSalvar5MinDepois();
 // Inicialização
 status();
 carregar();
+carregarVerificadorGeral(); // carrega o gráfico da home logo no início
 </script>
 </body>
 </html>
