@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Lotto Trivo Analyzer</title>
+<title>Lotto Trivo Analyzer - Frequência + Padrões</title>
 <style>
   :root {
     --bg: #080c12; --card: #121820; --card-hover: #1a222d; --border: #1e2a3a;
@@ -146,7 +146,6 @@
   }
   .copy-feedback.show { opacity: 1; }
 
-  /* DONUT */
   .donut-container {
     display: flex; flex-direction: column; align-items: center;
     background: linear-gradient(180deg, #0f172a 0%, #121820 100%);
@@ -169,7 +168,6 @@
   .legend-color { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
   .legend-pct { margin-left: auto; font-weight: 700; color: #e2e8f0; }
 
-  /* Cards rápidos home */
   .home-quick {
     display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
   }
@@ -184,289 +182,498 @@
     background: #1e293b; border: 1px solid #334155;
     padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 600;
   }
+
+  /* AUTH */
+  #auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: radial-gradient(ellipse at top, #0f172a 0%, #080c12 70%);
+  }
+  .auth-box {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .auth-logo { text-align: center; margin-bottom: 28px; }
+  .auth-logo .logo { font-size: 13px; letter-spacing: 4px; }
+  .auth-logo h1 { font-size: 26px; margin-top: 6px; }
+  .auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .auth-tab {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #0f1520;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .auth-tab.active {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #fff;
+    border-color: transparent;
+  }
+  .auth-form { display: none; }
+  .auth-form.active { display: block; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #0f1520;
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: var(--primary); }
+  .auth-error {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .auth-success {
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: #6ee7b7;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .auth-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  }
+  .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .user-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .user-bar .nome { color: var(--accent); font-weight: 600; }
+  .btn-logout {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <div class="logo">ANALYZER</div>
-    <h1>Lotto Trivo</h1>
-  </div>
-  <div class="status" id="status">
-    <div class="dot"></div>
-    <div>Carregando sistema...</div>
-  </div>
-  <div class="nav">
-    <button class="nav-btn active" data-panel="painel-inicio" onclick="trocarPainel('painel-inicio', this)">🏠 Início</button>
-    <button class="nav-btn" data-panel="painel-atrasados" onclick="trocarPainel('painel-atrasados', this)">⏳ Atrasados</button>
-    <button class="nav-btn" data-panel="painel-pos1" onclick="trocarPainel('painel-pos1', this)">1️⃣ 1ª Posição</button>
-    <button class="nav-btn" data-panel="painel-analise" onclick="trocarPainel('painel-analise', this)">📊 Análise</button>
-    <button class="nav-btn" data-panel="painel-resultados" onclick="trocarPainel('painel-resultados', this)">📋 Resultados</button>
-    <button class="nav-btn" data-panel="painel-acertos" onclick="trocarPainel('painel-acertos', this)">✅ Acertos</button>
-    <button class="nav-btn" data-panel="painel-palpite-grupos" onclick="trocarPainel('painel-palpite-grupos', this)">🎲 Grupos</button>
-    <button class="nav-btn" data-panel="painel-palpitao" onclick="trocarPainel('painel-palpitao', this)">🔥 Palpitão</button>
-    <button class="nav-btn" data-panel="painel-explicacao" onclick="trocarPainel('painel-explicacao', this)">📖 Como Funciona</button>
-  </div>
-  <div class="actions">
-    <button class="btn btn-primary" onclick="coletar()">🔄 Coletar</button>
-    <button class="btn btn-secondary" onclick="previsao()">📊 Análise</button>
-    <button class="btn btn-secondary" onclick="backtest()">🧪 Backtest</button>
-  </div>
 
-  <!-- ==================== INÍCIO ==================== -->
-  <div class="panel active" id="painel-inicio">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">🎯 Sugestão de Jogo</div>
-        <div class="section-badge">Próximo sorteio</div>
-      </div>
-      <div class="sugestao-grid" id="sugestao">
-        <div class="empty">Toque em <strong>Análise</strong> para gerar a sugestão.</div>
-      </div>
-      <button class="btn-copy" onclick="copiarSugestao()" id="btn-copiar-sugestao" style="display:none;">📋 Copiar Sugestão</button>
-      <span class="copy-feedback" id="feedback-sugestao">Copiado!</span>
+<!-- ==================== TELA DE AUTENTICAÇÃO ==================== -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="logo">ANALYZER</div>
+      <h1>Lotto Trivo</h1>
+      <div style="font-size:12px;color:#8b9bb4;margin-top:6px;">Frequência + Padrões</div>
     </div>
 
-    <!-- GRÁFICO REDONDO -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">📊 Desempenho Geral de Acertos</div>
-        <div class="section-badge" id="badge-donut">—</div>
+    <div class="auth-tabs" id="auth-tabs">
+      <button class="auth-tab active" onclick="mostrarAuth('login')">Entrar</button>
+      <button class="auth-tab" onclick="mostrarAuth('registro')">Criar Conta</button>
+    </div>
+
+    <div id="auth-error" class="auth-error"></div>
+    <div id="auth-success" class="auth-success"></div>
+
+    <!-- LOGIN -->
+    <div id="form-login" class="auth-form active">
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email">
       </div>
-      <div class="donut-container">
-        <div style="position:relative; width:220px; height:220px;">
-          <svg class="donut-svg" viewBox="0 0 42 42" id="donut-svg">
-            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#1e293b" stroke-width="5"></circle>
-          </svg>
-          <div class="donut-center-text">
-            <div class="donut-center-value" id="donut-total">0%</div>
-            <div class="donut-center-label">Média</div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="auth-btn" id="btn-login" onclick="fazerLogin()">Entrar</button>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="form-registro" class="auth-form">
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" id="reg-nome" placeholder="Seu nome" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="reg-email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="reg-senha" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
+      </div>
+      <button class="auth-btn" id="btn-registro" onclick="fazerRegistro()">Criar Conta</button>
+    </div>
+
+    <!-- CONFIRMAÇÃO DE CÓDIGO -->
+    <div id="form-confirmar" class="auth-form">
+      <p style="text-align:center; color:#94a3b8; font-size:14px; margin-bottom:18px; line-height:1.5;">
+        Enviamos um código de 6 dígitos para<br>
+        <strong id="email-confirmacao" style="color:#e2e8f0;"></strong>
+      </p>
+      <div class="form-group">
+        <label>Código de confirmação</label>
+        <input type="text" id="codigo-confirmacao" placeholder="000000" maxlength="6"
+               style="text-align:center; letter-spacing:8px; font-size:22px; font-weight:700;">
+      </div>
+      <button class="auth-btn" id="btn-confirmar" onclick="confirmarCodigo()">Confirmar Conta</button>
+      <button class="auth-btn" style="background:#1e293b; margin-top:10px; box-shadow:none;"
+              onclick="mostrarAuth('registro')">Voltar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== APP PRINCIPAL ==================== -->
+<div id="app-principal" style="display:none;">
+  <div class="app">
+    <div class="header">
+      <div class="logo">ANALYZER · FREQUÊNCIA + PADRÕES</div>
+      <h1>Lotto Trivo</h1>
+    </div>
+
+    <div class="user-bar">
+      <div>Olá, <span class="nome" id="nome-usuario">Usuário</span></div>
+      <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+    </div>
+
+    <div class="status" id="status">
+      <div class="dot"></div>
+      <div>Carregando sistema...</div>
+    </div>
+
+    <div class="nav">
+      <button class="nav-btn active" data-panel="painel-inicio" onclick="trocarPainel('painel-inicio', this)">🏠 Início</button>
+      <button class="nav-btn" data-panel="painel-atrasados" onclick="trocarPainel('painel-atrasados', this)">⏳ Atrasados</button>
+      <button class="nav-btn" data-panel="painel-pos1" onclick="trocarPainel('painel-pos1', this)">1️⃣ 1ª Posição</button>
+      <button class="nav-btn" data-panel="painel-analise" onclick="trocarPainel('painel-analise', this)">📊 Análise</button>
+      <button class="nav-btn" data-panel="painel-resultados" onclick="trocarPainel('painel-resultados', this)">📋 Resultados</button>
+      <button class="nav-btn" data-panel="painel-acertos" onclick="trocarPainel('painel-acertos', this)">✅ Acertos</button>
+      <button class="nav-btn" data-panel="painel-palpite-grupos" onclick="trocarPainel('painel-palpite-grupos', this)">🎲 Grupos</button>
+      <button class="nav-btn" data-panel="painel-palpitao" onclick="trocarPainel('painel-palpitao', this)">🔥 Palpitão</button>
+      <button class="nav-btn" data-panel="painel-explicacao" onclick="trocarPainel('painel-explicacao', this)">📖 Como Funciona</button>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="coletar()">🔄 Coletar</button>
+      <button class="btn btn-secondary" onclick="previsao()">📊 Análise</button>
+      <button class="btn btn-secondary" onclick="backtest()">🧪 Backtest</button>
+    </div>
+
+    <!-- INÍCIO -->
+    <div class="panel active" id="painel-inicio">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">🎯 Sugestão de Jogo</div>
+          <div class="section-badge">Baseada em Frequência</div>
+        </div>
+        <div class="sugestao-grid" id="sugestao">
+          <div class="empty">Toque em <strong>Análise</strong> para gerar a sugestão.</div>
+        </div>
+        <button class="btn-copy" onclick="copiarSugestao()" id="btn-copiar-sugestao" style="display:none;">📋 Copiar Sugestão</button>
+        <span class="copy-feedback" id="feedback-sugestao">Copiado!</span>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">📊 Desempenho Geral de Acertos</div>
+          <div class="section-badge" id="badge-donut">—</div>
+        </div>
+        <div class="donut-container">
+          <div style="position:relative; width:220px; height:220px;">
+            <svg class="donut-svg" viewBox="0 0 42 42" id="donut-svg">
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#1e293b" stroke-width="5"></circle>
+            </svg>
+            <div class="donut-center-text">
+              <div class="donut-center-value" id="donut-total">0%</div>
+              <div class="donut-center-label">Média</div>
+            </div>
+          </div>
+          <div class="donut-legend" id="donut-legend"></div>
+        </div>
+      </div>
+
+      <div class="home-quick">
+        <div class="quick-card">
+          <h3>1️⃣ 1ª Posição (Top 5)</h3>
+          <div class="quick-list" id="home-pos1">
+            <div class="empty" style="padding:12px;font-size:13px;">Carregando...</div>
           </div>
         </div>
-        <div class="donut-legend" id="donut-legend"></div>
-      </div>
-    </div>
-
-    <!-- ANÁLISES RÁPIDAS -->
-    <div class="home-quick">
-      <div class="quick-card">
-        <h3>1️⃣ 1ª Posição (Top 5)</h3>
-        <div class="quick-list" id="home-pos1">
-          <div class="empty" style="padding:12px;font-size:13px;">Carregando...</div>
+        <div class="quick-card">
+          <h3>🔥 Palpitão (Top 8 dezenas)</h3>
+          <div class="quick-list" id="home-palpitao">
+            <div class="empty" style="padding:12px;font-size:13px;">Carregando...</div>
+          </div>
         </div>
       </div>
-      <div class="quick-card">
-        <h3>🔥 Palpitão (Top 8 dezenas)</h3>
-        <div class="quick-list" id="home-palpitao">
-          <div class="empty" style="padding:12px;font-size:13px;">Carregando...</div>
+
+      <div class="section" id="secao-geral-home" style="display:none;">
+        <div class="section-header">
+          <div class="section-title">📈 Ranking Geral (Frequência)</div>
+          <div class="section-badge">Top 15</div>
         </div>
+        <div class="grid" id="ranking-geral"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">🕘 Histórico Completo de Previsões</div>
+          <div class="section-badge">Todos os horários</div>
+        </div>
+        <button class="btn btn-secondary" style="width:100%;margin-bottom:12px;" onclick="carregarHomeCompleto()">🔄 Atualizar tudo</button>
+        <div id="lista-historico-home"><div class="empty">Carregando histórico...</div></div>
       </div>
     </div>
 
-    <!-- RANKING GERAL -->
-    <div class="section" id="secao-geral-home" style="display:none;">
-      <div class="section-header">
-        <div class="section-title">📈 Ranking Geral</div>
-        <div class="section-badge">Top 15</div>
-      </div>
-      <div class="grid" id="ranking-geral"></div>
-    </div>
-
-    <!-- HISTÓRICO -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">🕘 Histórico Completo de Previsões</div>
-        <div class="section-badge">Todos os horários</div>
-      </div>
-      <button class="btn btn-secondary" style="width:100%;margin-bottom:12px;" onclick="carregarHomeCompleto()">🔄 Atualizar tudo</button>
-      <div id="lista-historico-home"><div class="empty">Carregando histórico...</div></div>
-    </div>
-  </div>
-
-  <!-- ATRASADOS -->
-  <div class="panel" id="painel-atrasados">
-    <div class="subnav">
-      <button class="sub-btn milhar active" onclick="mostrarAtrasado('milhar', this)">🎯 Milhar</button>
-      <button class="sub-btn centena" onclick="mostrarAtrasado('centena', this)">🔢 Centena</button>
-      <button class="sub-btn dezena" onclick="mostrarAtrasado('dezena', this)">📶 Dezena</button>
-      <button class="sub-btn grupo" onclick="mostrarAtrasado('grupo', this)">🎲 Grupo</button>
-    </div>
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title" id="titulo-atrasado">10 Milhares mais atrasadas</div>
-        <div class="section-badge" id="badge-atrasado">Top 10</div>
-      </div>
-      <div class="grid" id="lista-atrasados"><div class="empty">Carregando...</div></div>
-      <button class="btn-copy" onclick="copiarAtrasados()" id="btn-copiar-atrasados" style="display:none;margin-top:12px;">📋 Copiar estes Atrasados</button>
-      <span class="copy-feedback" id="feedback-atrasados">Copiado!</span>
-    </div>
-    <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="carregarAtrasados(true)">🔄 Atualizar atrasados</button>
-  </div>
-
-  <!-- 1ª POSIÇÃO -->
-  <div class="panel" id="painel-pos1">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">1️⃣ Atrasados da 1ª Posição</div>
-        <div class="section-badge">Exclusivo posição 1</div>
-      </div>
-      <button class="btn btn-primary" style="width:100%;margin-bottom:16px;" onclick="carregarAtrasadosPos1()">
-        🔄 Atualizar Atrasados 1ª Posição
-      </button>
+    <!-- ATRASADOS -->
+    <div class="panel" id="painel-atrasados">
       <div class="subnav">
-        <button class="sub-btn milhar active" onclick="mostrarPos1('milhar', this)">🎯 Milhar</button>
-        <button class="sub-btn centena" onclick="mostrarPos1('centena', this)">🔢 Centena</button>
-        <button class="sub-btn dezena" onclick="mostrarPos1('dezena', this)">📶 Dezena</button>
-        <button class="sub-btn grupo" onclick="mostrarPos1('grupo', this)">🎲 Grupo</button>
+        <button class="sub-btn milhar active" onclick="mostrarAtrasado('milhar', this)">🎯 Milhar</button>
+        <button class="sub-btn centena" onclick="mostrarAtrasado('centena', this)">🔢 Centena</button>
+        <button class="sub-btn dezena" onclick="mostrarAtrasado('dezena', this)">📶 Dezena</button>
+        <button class="sub-btn grupo" onclick="mostrarAtrasado('grupo', this)">🎲 Grupo</button>
       </div>
-      <div class="section-header">
-        <div class="section-title" id="titulo-pos1">Milhares mais atrasadas na 1ª posição</div>
-        <div class="section-badge" id="badge-pos1">Top 15</div>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title" id="titulo-atrasado">10 Milhares mais atrasadas</div>
+          <div class="section-badge" id="badge-atrasado">Top 10</div>
+        </div>
+        <div class="grid" id="lista-atrasados"><div class="empty">Carregando...</div></div>
+        <button class="btn-copy" onclick="copiarAtrasados()" id="btn-copiar-atrasados" style="display:none;margin-top:12px;">📋 Copiar estes Atrasados</button>
+        <span class="copy-feedback" id="feedback-atrasados">Copiado!</span>
       </div>
-      <div class="grid" id="lista-pos1">
-        <div class="empty">Toque em <strong>Atualizar Atrasados 1ª Posição</strong>.</div>
-      </div>
-      <button class="btn-copy" onclick="copiarPos1()" id="btn-copiar-pos1" style="display:none;margin-top:12px;">📋 Copiar estes da 1ª Posição</button>
-      <span class="copy-feedback" id="feedback-pos1">Copiado!</span>
+      <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="carregarAtrasados(true)">🔄 Atualizar atrasados</button>
     </div>
-  </div>
 
-  <!-- ANÁLISE -->
-  <div class="panel" id="painel-analise">
-    <div class="section">
-      <div class="section-header"><div class="section-title">🎯 Sugestão de Jogo</div></div>
-      <div class="sugestao-grid" id="sugestao-analise"><div class="empty">Toque em <strong>Análise</strong>.</div></div>
-      <button class="btn-copy" onclick="copiarSugestao()" id="btn-copiar-sugestao-analise" style="display:none;">📋 Copiar Sugestão</button>
-      <span class="copy-feedback" id="feedback-sugestao-analise">Copiado!</span>
-    </div>
-    <div class="section" id="secao-geral" style="display:none;">
-      <div class="section-header">
-        <div class="section-title">📈 Ranking Geral</div>
-        <div class="section-badge">Top 15</div>
+    <!-- 1ª POSIÇÃO -->
+    <div class="panel" id="painel-pos1">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">1️⃣ Atrasados da 1ª Posição</div>
+          <div class="section-badge">Exclusivo posição 1</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:16px;" onclick="carregarAtrasadosPos1()">
+          🔄 Atualizar Atrasados 1ª Posição
+        </button>
+        <div class="subnav">
+          <button class="sub-btn milhar active" onclick="mostrarPos1('milhar', this)">🎯 Milhar</button>
+          <button class="sub-btn centena" onclick="mostrarPos1('centena', this)">🔢 Centena</button>
+          <button class="sub-btn dezena" onclick="mostrarPos1('dezena', this)">📶 Dezena</button>
+          <button class="sub-btn grupo" onclick="mostrarPos1('grupo', this)">🎲 Grupo</button>
+        </div>
+        <div class="section-header">
+          <div class="section-title" id="titulo-pos1">Milhares mais atrasadas na 1ª posição</div>
+          <div class="section-badge" id="badge-pos1">Top 15</div>
+        </div>
+        <div class="grid" id="lista-pos1">
+          <div class="empty">Toque em <strong>Atualizar Atrasados 1ª Posição</strong>.</div>
+        </div>
+        <button class="btn-copy" onclick="copiarPos1()" id="btn-copiar-pos1" style="display:none;margin-top:12px;">📋 Copiar estes da 1ª Posição</button>
+        <span class="copy-feedback" id="feedback-pos1">Copiado!</span>
       </div>
-      <div class="grid" id="ranking-geral-analise"></div>
     </div>
-    <div class="section" id="secao-posicao" style="display:none;">
-      <div class="section-header"><div class="section-title">🔢 Ranking por Posição</div></div>
-      <div id="por-posicao"></div>
-    </div>
-  </div>
 
-  <!-- RESULTADOS -->
-  <div class="panel" id="painel-resultados">
-    <div class="section">
-      <div class="section-header"><div class="section-title">📋 Últimos Resultados</div></div>
-      <div class="grid" id="resultados"><div class="empty">Carregando resultados...</div></div>
+    <!-- ANÁLISE -->
+    <div class="panel" id="painel-analise">
+      <div class="section">
+        <div class="section-header"><div class="section-title">🎯 Sugestão de Jogo (Frequência)</div></div>
+        <div class="sugestao-grid" id="sugestao-analise"><div class="empty">Toque em <strong>Análise</strong>.</div></div>
+        <button class="btn-copy" onclick="copiarSugestao()" id="btn-copiar-sugestao-analise" style="display:none;">📋 Copiar Sugestão</button>
+        <span class="copy-feedback" id="feedback-sugestao-analise">Copiado!</span>
+      </div>
+      <div class="section" id="secao-geral" style="display:none;">
+        <div class="section-header">
+          <div class="section-title">📈 Ranking Geral (Frequência)</div>
+          <div class="section-badge">Top 15</div>
+        </div>
+        <div class="grid" id="ranking-geral-analise"></div>
+      </div>
+      <div class="section" id="secao-posicao" style="display:none;">
+        <div class="section-header"><div class="section-title">🔢 Ranking por Posição</div></div>
+        <div id="por-posicao"></div>
+      </div>
     </div>
-  </div>
 
-  <!-- ACERTOS -->
-  <div class="panel" id="painel-acertos">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">✅ Acertos × Último sorteio</div>
-        <div class="section-badge">Atrasados + Sugestão</div>
+    <!-- RESULTADOS -->
+    <div class="panel" id="painel-resultados">
+      <div class="section">
+        <div class="section-header"><div class="section-title">📋 Últimos Resultados</div></div>
+        <div class="grid" id="resultados"><div class="empty">Carregando resultados...</div></div>
       </div>
-      <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="verificarAcertos()">🔍 Verificar agora</button>
-      <button class="btn btn-secondary" style="width:100%;margin-bottom:16px;" onclick="salvarPrevisaoAgora()">💾 Salvar previsão (antes do próximo)</button>
-      <div id="box-acertos"><div class="empty">Toque em <strong>Verificar agora</strong> após o sorteio.</div></div>
     </div>
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">📈 Taxa de acerto (últimas previsões)</div>
-        <div class="section-badge" id="badge-taxas">—</div>
-      </div>
-      <div id="chart-taxas"></div>
-    </div>
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">🕘 Últimas 10 previsões</div>
-      </div>
-      <button class="btn btn-secondary" style="width:100%;margin-bottom:12px;" onclick="carregarHistoricoPrevisoes()">🔄 Atualizar histórico</button>
-      <div id="lista-historico-prev"><div class="empty">Salve uma previsão antes do sorteio e verifique depois.</div></div>
-    </div>
-  </div>
 
-  <!-- GRUPOS -->
-  <div class="panel" id="painel-palpite-grupos">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">🎲 Palpite por Grupos Atrasados</div>
-        <div class="section-badge">4 milhares por grupo</div>
+    <!-- ACERTOS -->
+    <div class="panel" id="painel-acertos">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">✅ Acertos × Último sorteio</div>
+          <div class="section-badge">Atrasados + Sugestão</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="verificarAcertos()">🔍 Verificar agora</button>
+        <button class="btn btn-secondary" style="width:100%;margin-bottom:16px;" onclick="salvarPrevisaoAgora()">💾 Salvar previsão (antes do próximo)</button>
+        <div id="box-acertos"><div class="empty">Toque em <strong>Verificar agora</strong> após o sorteio.</div></div>
       </div>
-      <button class="btn btn-primary" style="width:100%;margin-bottom:16px;" onclick="carregarPalpiteGrupos()">🔄 Gerar / Atualizar Palpite</button>
-      <div id="lista-palpite-grupos"><div class="empty">Toque em <strong>Gerar / Atualizar Palpite</strong>.</div></div>
-      <button class="btn-copy" onclick="copiarPalpiteGrupos()" id="btn-copiar-grupos" style="display:none;margin-top:12px;">📋 Copiar todas as milhares</button>
-      <span class="copy-feedback" id="feedback-grupos">Copiado!</span>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">📈 Taxa de acerto (últimas previsões)</div>
+          <div class="section-badge" id="badge-taxas">—</div>
+        </div>
+        <div id="chart-taxas"></div>
+      </div>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">🕘 Últimas 10 previsões</div>
+        </div>
+        <button class="btn btn-secondary" style="width:100%;margin-bottom:12px;" onclick="carregarHistoricoPrevisoes()">🔄 Atualizar histórico</button>
+        <div id="lista-historico-prev"><div class="empty">Salve uma previsão antes do sorteio e verifique depois.</div></div>
+      </div>
     </div>
-  </div>
 
-  <!-- PALPITÃO -->
-  <div class="panel" id="painel-palpitao">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">🔥 Análise Palpitão</div>
-        <div class="section-badge">20 dezenas fortes</div>
+    <!-- GRUPOS -->
+    <div class="panel" id="painel-palpite-grupos">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">🎲 Palpite por Grupos (Frequência)</div>
+          <div class="section-badge">4 milhares por grupo</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:16px;" onclick="carregarPalpiteGrupos()">🔄 Gerar / Atualizar Palpite</button>
+        <div id="lista-palpite-grupos"><div class="empty">Toque em <strong>Gerar / Atualizar Palpite</strong>.</div></div>
+        <button class="btn-copy" onclick="copiarPalpiteGrupos()" id="btn-copiar-grupos" style="display:none;margin-top:12px;">📋 Copiar todas as milhares</button>
+        <span class="copy-feedback" id="feedback-grupos">Copiado!</span>
       </div>
-      <button class="btn btn-primary" style="width:100%;margin-bottom:16px;" onclick="carregarPalpitao()">🔄 Gerar / Atualizar Palpitão</button>
-      <div id="box-palpitao"><div class="empty">Toque em <strong>Gerar / Atualizar Palpitão</strong>.</div></div>
-      <button class="btn-copy" onclick="copiarPalpitao()" id="btn-copiar-palpitao" style="display:none;margin-top:12px;">📋 Copiar as 20 dezenas</button>
-      <span class="copy-feedback" id="feedback-palpitao">Copiado!</span>
     </div>
-  </div>
 
-  <!-- COMO FUNCIONA -->
-  <div class="panel" id="painel-explicacao">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">📖 Como funciona</div>
+    <!-- PALPITÃO -->
+    <div class="panel" id="painel-palpitao">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">🔥 Análise Palpitão (Frequência)</div>
+          <div class="section-badge">20 dezenas que mais saem</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:16px;" onclick="carregarPalpitao()">🔄 Gerar / Atualizar Palpitão</button>
+        <div id="box-palpitao"><div class="empty">Toque em <strong>Gerar / Atualizar Palpitão</strong>.</div></div>
+        <button class="btn-copy" onclick="copiarPalpitao()" id="btn-copiar-palpitao" style="display:none;margin-top:12px;">📋 Copiar as 20 dezenas</button>
+        <span class="copy-feedback" id="feedback-palpitao">Copiado!</span>
       </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;color:#cbd5e1;font-size:14.5px;line-height:1.6;">
-        <p style="margin-bottom:12px;"><strong>1ª Posição:</strong> Analisa exclusivamente os números que saíram na primeira posição de cada sorteio.</p>
-        <p style="margin-bottom:12px;"><strong>Palpitão:</strong> Seleciona as 20 dezenas mais fortes com base em frequência + atraso + tendência recente.</p>
-        <p style="margin-bottom:12px;"><strong>Grupos:</strong> Gera 4 milhares para cada um dos 10 grupos mais atrasados.</p>
-        <p style="margin-bottom:12px;"><strong>Automático:</strong> Salva previsão 10 min antes e 5 min depois de cada resultado. Verifica acertos no horário.</p>
-        <p>Use os botões <strong>📋 Copiar</strong> para copiar os números facilmente.</p>
+    </div>
+
+    <!-- COMO FUNCIONA -->
+    <div class="panel" id="painel-explicacao">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">📖 Como funciona esta versão</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;line-height:1.6;font-size:14px;color:#cbd5e1;">
+          <p><strong style="color:#22d3ee;">Lógica nova: Frequência + Padrões</strong></p>
+          <br>
+          <p>Esta versão gera os palpites priorizando os <strong>números que mais saem</strong> no histórico completo da planilha.</p>
+          <br>
+          <p><strong>Pesos da sugestão:</strong></p>
+          <ul style="margin-left:18px;margin-top:8px;">
+            <li>45% → Frequência histórica total</li>
+            <li>30% → Frequência recente (últimos 60 sorteios)</li>
+            <li>15% → Padrão por posição</li>
+            <li>10% → Centenas mais quentes</li>
+          </ul>
+          <br>
+          <p>O sistema analisa todas as extrações salvas e tenta encontrar padrões reais de repetição.</p>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbwB1IMATuzJerRoWu9QVX5fKLApC8_uW_XxCdOp_UIsr5TZv8o9rvGs1ZxXlflVmfCDGw/exec';
+/***************************************************************
+ * CONFIGURAÇÃO - SUBSTITUA PELA URL DO SEU GOOGLE APPS SCRIPT
+ ***************************************************************/
+const API_URL = 'https://script.google.com/macros/s/AKfycbwFGQQfXRM0I8um4D_Wv20jImNcPZ4x0MnxYs25w70MKb4KvxFasZUcbGFvOIQbNuRp/exec';
+
+/***************************************************************
+ * VARIÁVEIS GLOBAIS
+ ***************************************************************/
+let cacheSugestao = [];
 let cacheAtrasados = null;
 let tipoAtrasadoAtual = 'milhar';
 let cachePos1 = null;
 let tipoPos1Atual = 'milhar';
-let cacheSugestao = [];
 let cachePalpiteGrupos = [];
 let cachePalpitao = [];
-const HORARIOS_VERIFICAR = [
-  '01:32','05:32','07:32','09:32','11:32','13:32','15:32','18:32','20:32','22:32'
-];
+let usuarioLogado = null;
 
-/* ===== API com timeout configurável ===== */
-async function api(action, timeoutMs = 45000) {
+/***************************************************************
+ * API
+ ***************************************************************/
+async function api(action, timeout = 45000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    const res = await fetch(API + '?action=' + encodeURIComponent(action), {
-      signal: controller.signal,
-      cache: 'no-store'
+    const res = await fetch(`${API_URL}?action=${action}`, {
+      method: 'GET',
+      signal: controller.signal
     });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error('Erro HTTP ' + res.status);
-    const json = await res.json();
-    if (json.sucesso === false) throw new Error(json.erro || 'Erro na API');
-    return json;
+    clearTimeout(id);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
   } catch (e) {
-    if (e.name === 'AbortError') throw new Error('Tempo esgotado (timeout)');
+    clearTimeout(id);
+    if (e.name === 'AbortError') throw new Error('Timeout da API');
     throw e;
   }
 }
 
 function setStatus(html, isError = false) {
   const el = document.getElementById('status');
+  if (!el) return;
   el.className = 'status' + (isError ? ' error' : '');
   el.innerHTML = `<div class="dot"></div><div>${html}</div>`;
 }
@@ -556,7 +763,7 @@ async function status() {
 async function coletar() {
   setStatus('Coletando dados... (pode demorar até 90s)');
   try {
-    const r = await api('coletar', 90000); // 90 segundos
+    const r = await api('coletar', 90000);
     setStatus(`Coleta concluída · ${r.gravados || r.importados || 0} registros`);
     carregar();
     carregarHomeCompleto();
@@ -593,7 +800,7 @@ async function carregar() {
   }
 }
 
-/* ===== ATRASADOS GERAIS ===== */
+/* ===== ATRASADOS ===== */
 async function carregarAtrasados(forcar) {
   const div = document.getElementById('lista-atrasados');
   if (!forcar && cacheAtrasados) {
@@ -730,12 +937,12 @@ function renderPos1(tipo) {
   document.getElementById('btn-copiar-pos1').style.display = 'inline-block';
 }
 
-/* ===== PREVISÃO / ANÁLISE ===== */
+/* ===== PREVISÃO ===== */
 async function previsao() {
-  setStatus('Calculando análise...');
+  setStatus('Calculando análise (Frequência + Padrões)...');
   try {
     const r = await api('previsao');
-    setStatus('Análise atualizada');
+    setStatus('Análise atualizada · Estratégia: ' + (r.estrategia || 'Frequência'));
     mostrarPrevisao(r);
     trocarPainel('painel-analise', document.querySelector('[data-panel="painel-analise"]'));
   } catch (e) {
@@ -798,7 +1005,7 @@ async function backtest() {
   }
 }
 
-/* ===== ACERTOS + HISTÓRICO ===== */
+/* ===== HISTÓRICO E DONUT ===== */
 function renderBarrasTaxas(taxas) {
   const items = [
     { label: 'Milhar', pct: taxas.milhar || 0, classe: 'milhar' },
@@ -846,21 +1053,14 @@ function renderHistoricoItens(itens, containerId) {
   });
 }
 
-/* ===== DONUT CHART (CORRIGIDO) ===== */
 function renderDonut(taxas) {
   const colors = {
-    milhar: '#a78bfa',
-    centena: '#67e8f9',
-    dezena: '#fcd34d',
-    grupo: '#6ee7b7',
-    sugestao: '#60a5fa'
+    milhar: '#a78bfa', centena: '#67e8f9', dezena: '#fcd34d',
+    grupo: '#6ee7b7', sugestao: '#60a5fa'
   };
   const labels = {
-    milhar: 'Milhar',
-    centena: 'Centena',
-    dezena: 'Dezena',
-    grupo: 'Grupo',
-    sugestao: 'Sugestão'
+    milhar: 'Milhar', centena: 'Centena', dezena: 'Dezena',
+    grupo: 'Grupo', sugestao: 'Sugestão'
   };
   const keys = ['milhar', 'centena', 'dezena', 'grupo', 'sugestao'];
 
@@ -872,7 +1072,6 @@ function renderDonut(taxas) {
   document.getElementById('donut-total').textContent = media + '%';
   document.getElementById('badge-donut').textContent = media + '% média';
 
-  // Normaliza para o desenho (soma = 100)
   const sumPositive = realValues.reduce((a, b) => a + (b > 0 ? b : 0), 0) || 1;
   const normalized = realValues.map(v => v > 0 ? (v / sumPositive) * 100 : 0);
 
@@ -906,7 +1105,6 @@ function renderDonut(taxas) {
   `).join('');
 }
 
-/* ===== HOME COMPLETO ===== */
 async function carregarHomeCompleto() {
   try {
     const r = await api('historico_previsoes');
@@ -925,12 +1123,7 @@ async function renderHomePos1() {
   try {
     if (!cachePos1) {
       const r = await api('atrasados_pos1');
-      cachePos1 = {
-        milhar: r.milhar || [],
-        centena: r.centena || [],
-        dezena: r.dezena || [],
-        grupo: r.grupo || []
-      };
+      cachePos1 = { milhar: r.milhar || [], centena: r.centena || [], dezena: r.dezena || [], grupo: r.grupo || [] };
     }
     const lista = (cachePos1.milhar || []).slice(0, 5);
     if (!lista.length) {
@@ -1024,7 +1217,7 @@ async function verificarAcertos() {
         <div class="card" style="border-color:#0891b2;"><div class="rank">Sugestão centena</div><div class="num">${s.sugestao_centena||0}</div></div>
       </div>`;
     box.innerHTML = html;
-    const total = (s.milhar||0) + (s.centena||0) + (s.dezena||0) + (s.grupo||0) + (s.sugestao||0) + (s.sugestao_centena||0);
+    const total = (s.milhar||0)+(s.centena||0)+(s.dezena||0)+(s.grupo||0)+(s.sugestao||0)+(s.sugestao_centena||0);
     setStatus(total > 0
       ? `Acertos: M${s.milhar||0} C${s.centena||0} D${s.dezena||0} G${s.grupo||0} · Sug ${s.sugestao||0}/${s.sugestao_centena||0}`
       : 'Nenhum acerto neste sorteio');
@@ -1039,7 +1232,7 @@ async function verificarAcertos() {
 /* ===== GRUPOS ===== */
 async function carregarPalpiteGrupos() {
   const box = document.getElementById('lista-palpite-grupos');
-  box.innerHTML = '<div class="empty">Analisando grupos atrasados...</div>';
+  box.innerHTML = '<div class="empty">Analisando grupos (Frequência)...</div>';
   setStatus('Gerando palpite por grupos...');
   try {
     const r = await api('palpite_grupos');
@@ -1074,8 +1267,8 @@ async function carregarPalpiteGrupos() {
 /* ===== PALPITÃO ===== */
 async function carregarPalpitao() {
   const box = document.getElementById('box-palpitao');
-  box.innerHTML = '<div class="empty">Analisando dezenas...</div>';
-  setStatus('Gerando Análise Palpitão...');
+  box.innerHTML = '<div class="empty">Analisando dezenas que mais saem...</div>';
+  setStatus('Gerando Análise Palpitão (Frequência)...');
   try {
     const r = await api('palpitao');
     if (!r.dezenas || !r.dezenas.length) {
@@ -1096,7 +1289,7 @@ async function carregarPalpitao() {
         </div>
       </div>
       <div class="section-header" style="margin-top:20px;">
-        <div class="section-title">🔥 20 Dezenas do Palpitão</div>
+        <div class="section-title">🔥 20 Dezenas que mais saem</div>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">`;
     r.dezenas.forEach(d => {
@@ -1125,69 +1318,143 @@ async function carregarPalpitao() {
   }
 }
 
-/* ===== AGENDADOR AUTOMÁTICO ===== */
-function getHoraMinuto() {
-  const now = new Date();
-  return String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+/* ===== AUTH ===== */
+function mostrarAuth(tipo) {
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-success').style.display = 'none';
+
+  if (tipo === 'login') {
+    document.getElementById('form-login').classList.add('active');
+    document.querySelectorAll('.auth-tab')[0].classList.add('active');
+  } else if (tipo === 'registro') {
+    document.getElementById('form-registro').classList.add('active');
+    document.querySelectorAll('.auth-tab')[1].classList.add('active');
+  } else if (tipo === 'confirmar') {
+    document.getElementById('form-confirmar').classList.add('active');
+  }
 }
-function getHoje() {
-  return new Date().toISOString().slice(0,10);
-}
-function jaExecutou(tipo, horario) {
-  return localStorage.getItem(`auto_${tipo}_${getHoje()}_${horario}`) === '1';
-}
-function marcarExecutado(tipo, horario) {
-  localStorage.setItem(`auto_${tipo}_${getHoje()}_${horario}`, '1');
-}
-function checkSchedule() {
-  const hm = getHoraMinuto();
-  HORARIOS_VERIFICAR.forEach(horaVerificar => {
-    const [h, m] = horaVerificar.split(':').map(Number);
-    let salvarH = h, salvarM = m - 10;
-    if (salvarM < 0) {
-      salvarM += 60;
-      salvarH = (salvarH - 1 + 24) % 24;
+
+async function fazerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value.trim();
+  if (!email || !senha) {
+    mostrarErroAuth('Preencha e-mail e senha');
+    return;
+  }
+  document.getElementById('btn-login').disabled = true;
+  try {
+    const r = await api(`login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`);
+    if (r.sucesso) {
+      usuarioLogado = r.usuario;
+      localStorage.setItem('lt_user', JSON.stringify(r.usuario));
+      entrarNoApp();
+    } else {
+      mostrarErroAuth(r.erro || 'Erro no login');
     }
-    const horaSalvar = String(salvarH).padStart(2,'0') + ':' + String(salvarM).padStart(2,'0');
-    if (hm === horaSalvar && !jaExecutou('salvar', horaSalvar)) {
-      marcarExecutado('salvar', horaSalvar);
-      setStatus(`⏰ Automático: salvando previsão (${horaSalvar})...`);
-      salvarPrevisaoAgora();
-    }
-    if (hm === horaVerificar && !jaExecutou('verificar', horaVerificar)) {
-      marcarExecutado('verificar', horaVerificar);
-      setStatus(`⏰ Automático: verificando acertos (${horaVerificar})...`);
-      verificarAcertos();
-    }
-  });
+  } catch (e) {
+    mostrarErroAuth(e.message);
+  }
+  document.getElementById('btn-login').disabled = false;
 }
-function checkSalvar5MinDepois() {
-  const hm = getHoraMinuto();
-  HORARIOS_VERIFICAR.forEach(horaResultado => {
-    const [h, m] = horaResultado.split(':').map(Number);
-    let salvarH = h;
-    let salvarM = m + 5;
-    if (salvarM >= 60) {
-      salvarM -= 60;
-      salvarH = (salvarH + 1) % 24;
+
+async function fazerRegistro() {
+  const nome = document.getElementById('reg-nome').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const senha = document.getElementById('reg-senha').value.trim();
+  if (!nome || !email || !senha) {
+    mostrarErroAuth('Preencha todos os campos');
+    return;
+  }
+  document.getElementById('btn-registro').disabled = true;
+  try {
+    const r = await api(`registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&nome=${encodeURIComponent(nome)}`);
+    if (r.sucesso) {
+      if (r.precisaConfirmar) {
+        document.getElementById('email-confirmacao').textContent = email;
+        mostrarAuth('confirmar');
+        mostrarSucessoAuth(r.mensagem);
+      } else {
+        usuarioLogado = { email, nome };
+        localStorage.setItem('lt_user', JSON.stringify(usuarioLogado));
+        entrarNoApp();
+      }
+    } else {
+      mostrarErroAuth(r.erro || 'Erro no registro');
     }
-    const horaSalvar = String(salvarH).padStart(2,'0') + ':' + String(salvarM).padStart(2,'0');
-    if (hm === horaSalvar && !jaExecutou('salvar_5min', horaSalvar)) {
-      marcarExecutado('salvar_5min', horaSalvar);
-      setStatus(`⏰ Automático: salvando previsão 5 min após resultado (${horaSalvar})...`);
-      salvarPrevisaoAgora();
-    }
-  });
+  } catch (e) {
+    mostrarErroAuth(e.message);
+  }
+  document.getElementById('btn-registro').disabled = false;
 }
-setInterval(checkSchedule, 20000);
-setInterval(checkSalvar5MinDepois, 20000);
-checkSchedule();
-checkSalvar5MinDepois();
+
+async function confirmarCodigo() {
+  const email = document.getElementById('email-confirmacao').textContent;
+  const codigo = document.getElementById('codigo-confirmacao').value.trim();
+  if (!codigo) {
+    mostrarErroAuth('Digite o código');
+    return;
+  }
+  document.getElementById('btn-confirmar').disabled = true;
+  try {
+    const r = await api(`confirmar&email=${encodeURIComponent(email)}&codigo=${encodeURIComponent(codigo)}`);
+    if (r.sucesso) {
+      usuarioLogado = r.usuario;
+      localStorage.setItem('lt_user', JSON.stringify(r.usuario));
+      entrarNoApp();
+    } else {
+      mostrarErroAuth(r.erro || 'Código inválido');
+    }
+  } catch (e) {
+    mostrarErroAuth(e.message);
+  }
+  document.getElementById('btn-confirmar').disabled = false;
+}
+
+function mostrarErroAuth(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('auth-success').style.display = 'none';
+}
+function mostrarSucessoAuth(msg) {
+  const el = document.getElementById('auth-success');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+function entrarNoApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-principal').style.display = 'block';
+  document.getElementById('nome-usuario').textContent = usuarioLogado?.nome || 'Usuário';
+  status();
+  carregarHomeCompleto();
+}
+
+function fazerLogout() {
+  localStorage.removeItem('lt_user');
+  usuarioLogado = null;
+  document.getElementById('app-principal').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  mostrarAuth('login');
+}
+
+function verificarSessao() {
+  try {
+    const salva = localStorage.getItem('lt_user');
+    if (salva) {
+      usuarioLogado = JSON.parse(salva);
+      entrarNoApp();
+      return;
+    }
+  } catch (e) {}
+  document.getElementById('auth-screen').style.display = 'flex';
+}
 
 // Inicialização
-status();
-carregar();
-carregarHomeCompleto();
+verificarSessao();
 </script>
 </body>
 </html>
